@@ -1,0 +1,12 @@
+ban_ve,vi_tri,do_dai_m,trang_thai,ghi_chu
+Tang I,Canh tren,3.44,doc_tu_anh_cho_xac_nhan,Khong dong nhat voi be ngang thong thuy
+Tang I,Canh duoi,5.32,doc_tu_anh_cho_xac_nhan,Khong tu gia dinh song song canh tren
+Tang I,Canh phai,13.16,doc_tu_anh_cho_xac_nhan,Do dai canh khong phai chieu sau vuong goc
+Tang I,Canh trai doan tren,7.62,doc_tu_anh_cho_xac_nhan,Co diem gay giua hai doan
+Tang I,Canh trai doan duoi,5.10,doc_tu_anh_cho_xac_nhan,Khong gop thanh mot doan thang khi chua xac nhan goc
+Tang I,Goc tren trai doan ngan 1,1.06,doc_tu_anh_cho_xac_nhan,Can xac dinh dung vi tri va goc
+Tang I,Goc tren trai doan ngan 2,0.80,doc_tu_anh_cho_xac_nhan,Can xac dinh dung vi tri va goc
+Tang lung,Canh tren,5.27,doc_tu_anh_cho_xac_nhan,Khong tu dat vi tri tang lung tren mat bang tang I
+Tang lung,Canh duoi,5.32,doc_tu_anh_cho_xac_nhan,
+Tang lung,Canh trai,7.70,doc_tu_anh_cho_xac_nhan,
+Tang lung,Canh phai,7.70,doc_tu_anh_cho_xac_nhan,
