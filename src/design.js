@@ -12,7 +12,7 @@ export const levels=[
 export const assumptions={units:'metres',externalWall:.18,internalWall:.1,floorToFloor:HEIGHT,stair:STAIR,style:'Contemporary Japandi / warm oak, mineral plaster, olive linen',entry:'Front recessed corner',source:'../plans/plot-geometry.json',stage:'Concept design, not construction drawings'};
 
 // Updated ground-floor brief. Coordinates are metres, right/left are from the gate looking in.
-export const GROUND={glassLine:2.3,porchLevel:-.3,stepRise:.15,stepTread:.3,gateEdge:0,gateOpening:2.4,sofa:{x:4.5,z:3.65,length:2.3,depth:.92,chaiseDepth:1.62},tv:{x:.5,z:3.5},rightWindows:[{z:11.65,width:1.8,sill:1.1,head:2.5}],exit:{z:9.5,width:.95},bedroomStart:10.15,beds:[{x:1.25,z:11.85,width:1,length:2},{x:3.75,z:11.85,width:1,length:2}],wc:{x1:.35,x2:1.35,z1:6.65,z2:8.18},parking:[{x:.8,z:1.0,angle:0,length:1.844,width:.714,height:1.132},{x:1.9,z:1.0,angle:0,length:1.844,width:.714,height:1.132},{x:3.0,z:1.0,angle:0,length:1.844,width:.714,height:1.132}],closedSides:['left','rear']};
+export const GROUND={glassLine:2.3,porchLevel:-.3,stepRise:.15,stepTread:.3,gateEdge:0,gateOpening:2.4,securityHeight:2.2,sofa:{x:4.5,z:3.65,length:2.3,depth:.92,chaiseDepth:1.62},tv:{x:.5,z:3.5},rightWindows:[{z:11.65,width:1.8,sill:1.1,head:2.5}],exit:{z:9.5,width:.95},bedroomStart:10.15,beds:[{x:1.25,z:11.85,width:1,length:2},{x:3.75,z:11.85,width:1,length:2}],wc:{x1:.35,x2:1.35,z1:6.65,z2:8.18},parking:[{x:1.14,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:2.27,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:3.4,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132}],closedSides:['left','rear']};
 
 export const HUMAN={height:1.7,eye:1.58,shoulder:.46};
 export const HONDA_SOURCE='https://www.honda.com.vn/xe-may/san-pham/lead-abs';
@@ -49,21 +49,26 @@ export const UPPER_LAYOUT={
  smallBoundary:[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.1,10.4],[3.1,9.2],[entrySpan(9.2)[1],9.2]],
  masterPolygon:[[entrySpan(masterFront)[0],masterFront],[entrySpan(masterFront)[1],masterFront],[entrySpan(6.8)[1],6.8],[3.15,6.8],[3.15,5.3],[2.2,5.3],[entrySpan(5.3)[0],5.3]],
  smallPolygon:[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.1,10.4],[3.1,9.2],[entrySpan(9.2)[1],9.2],[entrySpan(13.08)[1],13.08],[entrySpan(13.08)[0],13.08]],
- deck:{x1:2.6,x2:5.12,z1:7.58,z2:9.08,height:.14},
+ deck:{x1:2.6,x2:5.12,z1:6.9,z2:9.08,height:.14},
  chairs:[{x:3.27,z:8.18,rotation:-.35,color:'#a4ad92'},{x:4.5,z:8.42,rotation:.55,color:'#d0b99d'}],
  fan:{x:2.92,z:8.85},
 };
 
 export const SMALL_SUITE={
- bath:{left:.24,right:2.08,front:10.45,back:13.08,doorStart:10.78,doorWidth:.75},
- bed:{x:3.72,z:11.88,width:1.4,length:2,rotation:Math.PI},
+ bath:{left:.24,right:1.74,front:10.45,back:13.08,doorStart:10.78,doorWidth:.75},
+ bed:{x:3.15,z:11.88,width:1.4,length:2,rotation:Math.PI},
  wardrobe:{x:4.15,z:9.59,width:1.9,depth:.58,height:2.55},
  desk:{x:4.96,z:10.38,width:.72,depth:.4},
- window:{z:11.85,width:1.5,sill:1.05,head:2.6},
+ window:{z:10.38,width:.7,sill:1.1,head:2.4},
+ balcony:{innerX:4.57,front:11.05,back:12.85,doorStart:11.43,doorWidth:.86},
 };
 
+const SB=SMALL_SUITE.balcony;
+UPPER_LAYOUT.smallPolygon=[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.1,10.4],[3.1,9.2],[entrySpan(9.2)[1],9.2],[entrySpan(SB.front)[1],SB.front],[SB.innerX,SB.front],[SB.innerX,SB.back],[entrySpan(SB.back)[1],SB.back],[entrySpan(13.08)[1],13.08],[entrySpan(13.08)[0],13.08]];
+export const SMALL_BALCONY=[[SB.innerX,SB.front],[entrySpan(SB.front)[1],SB.front],[entrySpan(SB.back)[1],SB.back],[SB.innerX,SB.back]];
+
 export const MASTER_SUITE={
- balcony:{splitX:3.45,depth:1.45},
+ balcony:{splitX:3.15,depth:1.45},
  bath:{left:.22,right:3.1,front:3.65,back:5.25,doorStart:4.25,doorWidth:.8,doorAxis:"right"},
  bed:{x:1.34,z:2.36,width:1.8,length:2,rotation:Math.PI/2},
  pc:{x:1.36,z:.43,width:1.85,depth:.6,chairZ:.565},
@@ -74,7 +79,7 @@ export const MASTER_SUITE={
  wardrobe:{x:4.97,z:5.47,width:1.3,depth:.58,height:2.55},
  tv:{x:4.85,z:2.36,length:1.75,depth:.42},
  ventilationWindow:{z:4,width:.65,sill:1.9,head:2.55},
- commonWindow:{z:7.4,width:1.1,sill:.95,head:2.5},
+ commonWindow:{z:8.0,width:1.1,sill:.95,head:2.5},
 };
 function clipDesignRight(poly,x){const out=[];for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length];if(a[0]>=x)out.push(a);if((a[0]>=x)!==(b[0]>=x)){const t=(x-a[0])/(b[0]-a[0]);out.push([x,a[1]+t*(b[1]-a[1])])}}return out}
 export const MASTER_BALCONY=clipDesignRight(clipAtZ(buildingPlot,MASTER_SUITE.balcony.depth,true).map(toWorld),MASTER_SUITE.balcony.splitX);
@@ -82,10 +87,17 @@ export const MASTER_BALCONY=clipDesignRight(clipAtZ(buildingPlot,MASTER_SUITE.ba
 UPPER_LAYOUT.masterPolygon=[[.1,.15],[MASTER_SUITE.balcony.splitX-.05,.15],[MASTER_SUITE.balcony.splitX-.05,1.53],[entrySpan(1.53)[1],1.53],[entrySpan(6.8)[1],6.8],[3.15,6.8],[3.15,5.3],[2.2,5.3],[entrySpan(5.3)[0],5.3]];
 
 export const THIRD={
- frontEnd:6.5,rearStart:10.5,
+ frontEnd:6.5,rearStart:10.6,
+ enclosure:{front:6.5,back:10.6,right:5.2,height:3.05,roofThickness:.16,roofSlope:.015,frontDoor:{left:1.4,width:.9},rearDoor:{left:3.25,width:.95}},
  prayer:{left:2.45,right:5.2,front:6.5,back:9.1,sideDoorStart:8,sideDoorWidth:.9,height:3.05,altarX:3.85,altarZ:8.67},
- laundry:{x1:3.55,x2:5.24,z1:10.5,z2:13.08,roofHeight:2.55,machines:[{x:4.83,z:11.04,kind:'washer'},{x:4.83,z:11.8,kind:'dryer'}],machineWidth:.6,machineDepth:.65},
- handwash:{x:2.6,z:12.73,width:.85,depth:.6,height:.52},
- drying:{left:.48,right:2.08,front:10.85,back:12.45,height:1.9},
- terrace:{tableX:2.75,tableZ:2.85,parapet:.58,rail:.57},
+ laundry:{x1:.28,x2:1.85,z1:10.52,z2:11.65,roofHeight:2.55,machines:[{x:.7,z:11.025,rotation:Math.PI,kind:'washer'},{x:1.4,z:11.025,rotation:Math.PI,kind:'dryer'}],machineWidth:.6,machineDepth:.65},
+ handwash:{x:4.7,z:12.61,width:.8,depth:.6,height:.59},
+ drying:{left:2.15,right:3.85,front:11.5,back:12.8,height:1.9},
+ terrace:{tableX:3.5,tableZ:3.45,parapet:.58,rail:.57,deck:{left:2.3,right:4.85,front:2.1,back:4.85}},
 };
+
+// Split air-conditioning locations in design coordinates; right is from the front yard looking in.
+export const BEDROOM_AC=[
+ {id:'master',indoor:{x:entrySpan(3.1)[1]-.195,z:3.1,y:2.63,width:.88,height:.29,depth:.21,rotation:Math.PI/2},outdoor:{z:3.1,y:2.43,width:.82,height:.6,depth:.32,gap:.15},pipeZ:3.1,drain:{x:2.94,z:3.76},airflow:'across-foot-end'},
+ {id:'phong_nho',indoor:{x:entrySpan(9.6)[1]-.195,z:9.6,y:2.63,width:.8,height:.29,depth:.21,rotation:Math.PI/2},outdoor:{z:9.45,y:2.43,width:.82,height:.6,depth:.32,gap:.15},pipeZ:9.45,drain:{x:1.68,z:10.68},airflow:'across-foot-end'},
+];

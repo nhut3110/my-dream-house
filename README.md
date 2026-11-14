@@ -1,4 +1,4 @@
-# Nhà mình — hai tầng minimalist
+# Nhà mình — ba tầng minimalist
 
 Xem http://localhost:4190/ (`npm run dev`). Trái/phải luôn tính từ sân nhìn vào. Đơn vị mét. Giữ dữ liệu thửa đất 7 đỉnh gốc; phương án hiện tại bo lồi góc hiên theo yêu cầu, chưa phải ranh xây dựng đã xác minh.
 
@@ -126,3 +126,50 @@ Dock hỗ trợ cả ba tầng, liên tầng và bảng kích thước tầng 3.
 Repo cá nhân: `nhut3110/my-dream-house`, nhánh `main`. Vercel dùng Vite, Node 24, `npm ci`, rồi `npm run check && npm run build`; đầu ra `dist`. Sau khi kết nối repo, push main tự deploy production; pull request có preview. GitHub Actions chạy cùng check/build, không cần deploy token. Không cần backend hoặc Supabase.
 
 Ảnh tham chiếu gốc, lịch sử bản dựng, ảnh QC và GLB xuất ra giữ ở máy local, không đưa vào repo. Website chỉ phục vụ sơ đồ vector không chứa ảnh giấy tờ gốc.
+
+## Chuồng cu kín chung thang và phòng thờ
+
+Thay phòng thờ đứng riêng bằng khối kín từ Z=6,50 đến 10,60 m, chung một mái liền không khoét trên ô thang. Sảnh bên trái và sảnh sau nối hai sân bằng cửa kính đóng kín rộng 900/950 mm, ngưỡng cao 40 mm, rãnh thu nước nằm phía ngoài. Phòng thờ giữ vách ngăn/cửa nội bộ, hướng bàn thờ không đổi. Mái đặc có mặt dưới phẳng ở 3,05 m và lớp trên tạo dốc 1,5% về máng/ống thoát ngoài sảnh thang. Mô hình thể hiện ý tưởng che mưa, chưa phải chi tiết chống thấm/thoát nước thi công.
+
+Máy giặt và sấy quay mặt ra sân, đặt cạnh nhau dọc vách sau, có mặt bàn trên máy và tủ đồ giặt bên cạnh. Bồn giặt tay thấp và ghế ngồi chung mái che; giàn phơi ngoài trời nằm phía đối diện. Từ cửa sân sau đến mặt máy chừa khoảng 1,69 m. Sân trước có cụm bàn tròn cao 780 mm/bốn ghế trên sàn gỗ phía phải, ghế băng phía trước; chừa lối đi rộng bên trái từ cửa ra sân. Bản trước giữ local tại `revisions/before-enclosed-rooftop/`.
+
+## Mái đưa gọn và sân giặt lộ thiên
+
+Hai máy chuyển về phía trái theo hướng từ sân trước nhìn vào, tựa vách sau chuồng cu và quay mặt về sân sau. Mái kim loại mỏng có trần gỗ, gắn vách, đưa khoảng 1,05 m; chỉ che khoang máy rộng 1,57 m, bỏ mái lớn và cột chống giữa sân. Bồn giặt tay/ghế ngồi ở phía phải, giàn phơi giữa sân đều lộ thiên. Action Tường cao/thấp hiện trực tiếp trên dock; icon dùng tâm hình học riêng, không bị chữ ẩn tạo thêm hàng.
+
+## Điều hòa hai phòng tầng 2
+
+Master: dàn lạnh 880 × 290 × 210 mm trên khoảng trống vách phải, giữa khu TV và cửa thông gió. Phòng nhỏ: dàn lạnh 800 × 290 × 210 mm trên vách phải, phía chân giường, trước cửa sổ. Mép dưới hai máy ở 2,63 m, còn khoảng 200 mm tới đáy sàn trên.
+
+Hai dàn nóng 820 × 600 × 320 mm treo vách phải (từ sân nhìn vào), có giá đỡ và khe sau máy 150 mm. Đáy máy cao 2,43 m so với sàn tầng 2; hai cụm nằm cạnh cửa sổ theo phương ngang để không che ô lấy sáng. Có tuyến ống cao sát trần, đoạn xuống ngoài vách và ống nước ngưng về WC từng phòng. Đây là vị trí/kích thước tham khảo để bố trí; công suất, chiều dài ống cho phép và thông số lắp đặt cần chọn theo máy thực tế.
+
+Bục gỗ khu chung kéo dài tới z=6,90 m, kích thước 2,52 × 2,18 m; giữ nguyên lối đi bằng phẳng cạnh cầu thang và khoảng cách tới vách master.
+
+Sân trước tầng 3 bỏ bộ bàn ghế, giữ khoảng giữa thoáng; bố trí chậu cây và bồn cây rủ theo lan can. Mái che máy giặt có hai trụ thép hộp 55 mm ở hai góc ngoài, tách khỏi ống thoát nước.
+
+### Nội thất, an ninh và cây xanh bổ sung
+
+- Master có kệ sách/trưng bày đồ chơi 1,26 × 0,32 × 1,72 m trong khoảng giữa TV và tủ áo, dưới cửa thông gió.
+- Cửa sổ khu chung căn giữa khoảng tường từ z=6,80 đến 9,20 m (tâm z=8,00 m); kính theo góc chuyển nhẹ của mặt bên nhà.
+- Tủ TV và bếp tầng 1 bám vách phải, chừa khe lắp đặt khoảng 10 mm; bếp có phần bù theo góc đổi hướng mặt tường.
+- Ba xe đặt chéo 45° song song. Kích thước bao theo Honda LEAD ABS: 1.844 × 714 × 1.132 mm, nguồn https://www.honda.com.vn/xe-may/san-pham/lead-abs. Đây là mô hình so kích thước, không phải mẫu 3D chính hãng. Có kệ giày 800 × 280 mm sát phải hiên.
+- Cổng/tường hiên cao 2,20 m tính từ sân thấp. Ba camera mô phỏng: góc hiên; vách phải phòng nhỏ tầng 2 nhìn chéo ra đường; bên trong phòng ông bà.
+- Bồn cây rủ dùng chung cho ban công tầng 2 và lan can tầng 3, tán dày và dây rủ dài khoảng 1,05–1,85 m. Cây là hình học tĩnh, không có vòng lặp animation.
+
+
+### Ngày/đêm và bố trí đèn
+
+Mặc định mở toàn cảnh đủ ba tầng, tường cao và khung camera vừa toàn nhà. Nút trăng trong dock chuyển ngày/đêm với chuyển tiếp 650 ms (tắt chuyển động nếu hệ điều hành yêu cầu giảm animation).
+
+Danh mục `src/lighting-plan.js` có 59 đèn: downlight phòng khách/bếp/hành lang, đèn thả bàn ăn, đèn ốp trần phòng ngủ, đèn trần WC/khu tắm, đèn lavabo và đèn dưới tủ bếp; đèn dẫn bậc đi theo cao độ hai vế thang; đèn hiên, ban công, sân trước/sau và dưới mái giặt. Đèn tường thân đen, mặt kính sáng và hắt lên/xuống theo ảnh tham khảo; khu tường thấp có chiều hắt lên ngắn hơn. Phòng ngủ/khu ở dùng tông khoảng 3000 K, khu tác vụ và WC khoảng 3500 K. Biển số nhà hai dòng “356/73 / HOÀNG DIỆU” đặt cạnh cổng.
+
+Ánh sáng phối cảnh dùng tối đa 12 nguồn trực tiếp không đổ bóng bổ sung, kết hợp bề mặt phát sáng và mảng hắt ánh sáng nhẹ. Chuyển ngày/đêm giữ nguyên số light slot để tránh biên dịch lại shader; hình học vỏ đèn được gộp theo vật liệu/tầng. Đây là phối cảnh bố trí, chưa phải mô phỏng lux hoặc bản thiết kế điện thi công.
+
+
+### Thử nới ban công và hoàn thiện mái
+
+Ban công master nới 300 mm về trái: vách x=3,15 m gióng vách WC/lối vào. Phòng nhỏ giữ giường 1,40 × 2,00 m, chuyển tâm giường sang x=3,15 m; WC còn khoảng 1,45 × 2,63 m lọt lòng. Hai lối cạnh khung giường khoảng 0,60–0,61 m. Loggia nằm trong ranh nhà, dài 1,80 m, sâu sử dụng tối thiểu khoảng 0,66 m; cửa kính lùa 860 mm, hai chậu cây treo trên lan can. Cửa sổ chuyển về bàn học, rộng 700 mm; dàn nóng chuyển về z=9,45 m, tránh cửa sổ và loggia. Bố cục này nhỏ gọn, ưu tiên một góc chăm cây.
+
+Các cửa sổ ngoài nhà có mái kim loại mỏng, mặt dưới gỗ, nhô khoảng 430 mm, có mép hắt nước và giằng mảnh. Bồn nước đứng danh định 1.000 L và thang thép rộng 460 mm đặt trên/sau mái chuồng cu; thang tránh cửa sân sau và hai máy. Vị trí bồn là bố trí concept, chưa tính kết cấu chịu tải mái.
+
+Đèn trang trí vách phải tầng 1–2 gióng theo cùng hai vị trí z=4,95 / 8,80 m, cao 2,10 m trên sàn mỗi tầng. Tăng sáng phòng khách/nội thất, bổ sung hai đèn tường và bốn đèn trụ cho sân trước. Khi xem riêng một tầng, hình học đèn trần chuyển opacity 12% để không che nội thất; chuyển toàn nhà sẽ trở lại vật liệu đặc.
