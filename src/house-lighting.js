@@ -35,6 +35,11 @@ export function createHouseLighting({house,floors,scene}){
    for(const y of[-.165,.165])box(g,0,y,.07,.19,.035,.14,dark);
    for(const x of[-.085,.085])box(g,x,0,.13,.018,.31,.018,dark);
    wash(g,spec.washUp??.8);wash(g,.8,false);
+  }else if(spec.kind==='address'){
+   box(g,0,.015,.022,.065,.11,.035,dark);
+   box(g,0,0,.09,.46,.045,.15,dark);
+   box(g,0,-.026,.095,.39,.012,.09,glow);
+   const downwash=mesh(g,new T.PlaneGeometry(.51,.42),washMaterial,0,-.29,.028);downwash.renderOrder=1;wallWashes.push(downwash);
   }else if(spec.kind==='bollard'){
    box(g,0,-spec.y/2,0,.08,spec.y,.08,dark);box(g,0,-.06,0,.085,.06,.085,glow);box(g,0,-.015,0,.11,.025,.11,dark);
   }else if(spec.kind==='step'){
@@ -49,7 +54,7 @@ export function createHouseLighting({house,floors,scene}){
   }
  }
  // Number plaque faces the lane; the two-line texture remains readable at close range.
- const sign=new T.Group();sign.name='Bien_so_nha_356_73_Hoang_Dieu';sign.position.set(.235,1.39,-.047);sign.rotation.y=Math.PI;roots[0].add(sign);
+ const sign=new T.Group();sign.name='Bien_so_nha_356_73_Hoang_Dieu';sign.position.set(3.5,1.39,-.047);sign.rotation.y=Math.PI;sign.scale.x=-1;sign.userData={side:'right-from-street',textUnmirrored:true};roots[0].add(sign);
  box(sign,0,0,0,.42,.285,.026,dark);
  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=640;const ctx=canvas.getContext('2d');
  ctx.fillStyle='#283431';ctx.fillRect(0,0,1024,640);ctx.strokeStyle='#bea778';ctx.lineWidth=5;ctx.strokeRect(22,22,980,596);ctx.fillStyle='#f2e1b7';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 225px sans-serif';ctx.fillText('356/73',512,260);ctx.font='500 94px sans-serif';ctx.fillText('HOÀNG DIỆU',512,485);

@@ -6,7 +6,7 @@ import './style.css';
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
-import {house,floors,labels,assetState,loadFurniture,setHouseView,buildDimensions,box,M,referencePeople,openingAudit} from './house.js';
+import {house,floors,labels,assetState,loadFurniture,setHouseView,buildDimensions,box,M,referencePeople,openingAudit,entranceDoor,setEntranceProgress} from './house.js';
 import {levels,plot,HEIGHT,assumptions} from './design.js';
 const stage=document.querySelector('#stage'),viewport=document.querySelector('#viewport');
 const touchDevice=matchMedia('(any-pointer:coarse)').matches||navigator.maxTouchPoints>0||/Android|iPhone|iPad/.test(navigator.userAgent)||innerWidth<850;
@@ -61,8 +61,20 @@ function setNight(night){
  invalidate();
 }
 lightingButton.onclick=()=>setNight(!isNight);
+let doorTransition=null,doorPress=null;
+const doorRay=new T.Raycaster(),doorPointer=new T.Vector2();
+function toggleEntranceDoor(){entranceDoor.open=!entranceDoor.open;doorTransition={from:entranceDoor.progress,to:entranceDoor.open?1:0,time:performance.now()};if(reduce.matches){setEntranceProgress(doorTransition.to);doorTransition=null}invalidate(true)}
+function visibleObject(o){for(let p=o;p;p=p.parent)if(!p.visible)return false;return true}
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.button===0)doorPress={x:e.clientX,y:e.clientY,id:e.pointerId,time:performance.now()}});
+renderer.domElement.addEventListener('pointercancel',()=>{doorPress=null});
+renderer.domElement.addEventListener('pointerup',e=>{
+ const press=doorPress;doorPress=null;if(!press||press.id!==e.pointerId||Math.hypot(e.clientX-press.x,e.clientY-press.y)>6||performance.now()-press.time>600||!roomPlan.hidden||document.querySelector('dialog[open]'))return;
+ const rect=renderer.domElement.getBoundingClientRect();doorPointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);house.updateMatrixWorld(true);doorRay.setFromCamera(doorPointer,camera);
+ const hit=doorRay.intersectObject(house,true).find(h=>visibleObject(h.object));if(!hit)return;
+ for(let o=hit.object;o;o=o.parent)if(o===entranceDoor.group){toggleEntranceDoor();break}
+});
 let previousFrame=performance.now();
-function tick(now){const dt=Math.min((now-previousFrame)/1000,.05);previousFrame=now;if(document.hidden){requestAnimationFrame(tick);return}let moving=false;if(lightingTransition){const t=Math.min(1,(now-lightingTransition.time)/650),e=t*t*(3-2*t);applyLighting(T.MathUtils.lerp(lightingTransition.from,lightingTransition.to,e));moving=true;if(t===1)lightingTransition=null}if(transition){const t=Math.min(1,(now-transition.time)/650),e=1-Math.pow(1-t,3);camera.position.lerpVectors(transition.start.p,transition.end.p,e);controls.target.lerpVectors(transition.start.t,transition.end.t,e);camera.zoom=T.MathUtils.lerp(transition.start.z,transition.end.z,e);camera.updateProjectionMatrix();moving=true;if(t===1)transition=null}moving=freeNav.update(dt)||moving;if(!freeNav.free)controls.update();if(dirty||moving||performance.now()-lastChange<100){renderer.render(scene,camera);frames++;drawLabels();dirty=false}requestAnimationFrame(tick)}
+function tick(now){const dt=Math.min((now-previousFrame)/1000,.05);previousFrame=now;if(document.hidden){requestAnimationFrame(tick);return}let moving=false;if(doorTransition){const t=Math.min(1,(now-doorTransition.time)/650),e=t*t*(3-2*t);setEntranceProgress(T.MathUtils.lerp(doorTransition.from,doorTransition.to,e));invalidate(true);moving=true;if(t===1)doorTransition=null}if(lightingTransition){const t=Math.min(1,(now-lightingTransition.time)/650),e=t*t*(3-2*t);applyLighting(T.MathUtils.lerp(lightingTransition.from,lightingTransition.to,e));moving=true;if(t===1)lightingTransition=null}if(transition){const t=Math.min(1,(now-transition.time)/650),e=1-Math.pow(1-t,3);camera.position.lerpVectors(transition.start.p,transition.end.p,e);controls.target.lerpVectors(transition.start.t,transition.end.t,e);camera.zoom=T.MathUtils.lerp(transition.start.z,transition.end.z,e);camera.updateProjectionMatrix();moving=true;if(t===1)transition=null}moving=freeNav.update(dt)||moving;if(!freeNav.free)controls.update();if(dirty||moving||performance.now()-lastChange<100){renderer.render(scene,camera);frames++;drawLabels();dirty=false}requestAnimationFrame(tick)}
 requestAnimationFrame(tick);resize();setHouseView(mode,low);targetCamera(false);
 loadFurniture(()=>{setHouseView(mode,low);invalidate(true);document.querySelector('#loading').style.opacity='0';setTimeout(()=>document.querySelector('#loading').remove(),500);document.querySelector('#status').textContent=assetState.failed.length?'Có nội thất chưa tải được':'Phương án bo góc · Có lưu đường đất gốc';window.houseDemo.ready=true});
 const floorNav=document.querySelector('#floor-options');
@@ -88,7 +100,7 @@ document.querySelector('#capture').addEventListener('click',()=>{renderer.render
 document.querySelector('#export').addEventListener('click',async(e)=>{const button=e.currentTarget;button.disabled=true;toast('Đang đóng gói mô hình…');try{const {GLTFExporter}=await import('three/addons/exporters/GLTFExporter.js');const saved={mode,low};setHouseView('all',false);house.getObjectByName('Cau_thang_chu_L').visible=true;house.getObjectByName('Cau_thang_tang_2_len_3').visible=true;const result=await new GLTFExporter().parseAsync(house,{binary:true,onlyVisible:true});setHouseView(saved.mode,saved.low);download(new Blob([result],{type:'model/gltf-binary'}),'phong-khach-minimalist.glb');toast('Đã lưu mô hình · Đơn vị mét')}catch(err){console.error(err);setHouseView(mode,low);toast('Chưa xuất được mô hình. Hãy thử lại.')}finally{house.getObjectByName('Cau_thang_chu_L').visible=document.querySelector('#stair-toggle').getAttribute('aria-pressed')==='true';setHouseView(mode,low);button.disabled=false;invalidate(true)}});
 const notes=document.querySelector('#notes');document.querySelector('#notes-button').onclick=()=>notes.showModal();document.querySelector('#close-notes').onclick=()=>notes.close();notes.addEventListener('click',e=>{if(e.target===notes){const r=notes.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)notes.close()}});
 renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();toast('Mất kết nối 3D. Tải lại trang để tiếp tục.')});
-window.houseDemo={ready:false,getCamera:()=>camera,openingAudit,view:updateView,stats:()=>({mode,low,plan,freeCamera:freeNav.free,assets:assetState,triangles:renderer.info.render.triangles,drawCalls:renderer.info.render.calls,frames,visibleFloors:floors.map(f=>f.visible),lighting:lighting.stats(),camera:camera.position.toArray(),target:controls.target.toArray(),plot,assumptions}),scene,house,lighting,setNight};
+window.houseDemo={ready:false,getCamera:()=>camera,openingAudit,view:updateView,stats:()=>({mode,low,plan,freeCamera:freeNav.free,assets:assetState,triangles:renderer.info.render.triangles,drawCalls:renderer.info.render.calls,frames,visibleFloors:floors.map(f=>f.visible),lighting:lighting.stats(),camera:camera.position.toArray(),target:controls.target.toArray(),plot,assumptions}),scene,house,lighting,setNight,entranceDoor};
 
 setupViewerDock();
 

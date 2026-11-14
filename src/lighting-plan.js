@@ -1,17 +1,19 @@
-import {HEIGHT,UPPER,STAIR,entrySpan,THIRD,MASTER_SUITE,SMALL_SUITE} from './design.js';
+import {HEIGHT,UPPER,STAIR,entrySpan,THIRD,MASTER_SUITE,SMALL_SUITE,SERVICE} from './design.js';
 
 // Metres above each finished floor. Warm living areas; neutral task/bathroom lighting.
 export const LIGHTING_PLAN=[];
 const add=(floor,zone,kind,x,z,options={})=>LIGHTING_PLAN.push({floor,zone,kind,x,z,y:HEIGHT-UPPER.slabThickness-.015,kelvin:3000,...options});
 for(const [x,z] of [[1.55,3.15],[3.7,3.15],[1.55,4.7],[3.7,4.7]])add(0,'living','ceiling',x,z,{primary:z===3.15,allPriority:10,power:65,range:5.8});
-add(0,'dining','pendant',2.6,7.65,{y:2.128,radius:.175,primary:true});
-for(const z of [6.15,7.3,8.15])add(0,'kitchen','ceiling',4.65,z,{kelvin:3500,primary:z===7.3});
-add(0,'kitchen','strip',entrySpan(7.65)[1]-.22,7.65,{y:1.455,length:1.6,kelvin:3500});
+add(0,'dining','pendant',SERVICE.dining.x,SERVICE.dining.z,{y:2.128,radius:.175,primary:true});
+for(const z of [6.9,8.15,9.35])add(0,'kitchen','ceiling',4.65,z,{kelvin:3500,primary:z===8.15});
+add(0,'kitchen','strip',entrySpan(8.6)[1]-.26,8.6,{y:1.535,length:1.6,kelvin:3500});
+add(0,'kitchen','strip',3.6,SERVICE.kitchen.end-.28,{y:1.585,length:1.8,rotation:Math.PI/2,kelvin:3500});
 add(0,'rear-hall','ceiling',1.35,10.55,{radius:.13,primary:true});
 for(const z of [11.2,12.5])add(0,'grandparents','ceiling',3.7,z,{radius:.18,primary:z===11.2});
 for(const z of [11.65,12.65])add(0,'bath-grandparents','ceiling',.95,z,{kelvin:3500,primary:z===11.65});
 add(0,'washbasin','mirror',entrySpan(10.55)[0]+.105,10.55,{y:1.92,rotation:Math.PI/2,length:.5,kelvin:3500});
 add(0,'porch','ceiling',2.5,1.22,{radius:.16,y:3.105,primary:true,priority:9});
+add(0,'address','address',3.5,-.047,{y:1.72,rotation:Math.PI,primary:true,priority:7,power:3,range:1.5});
 add(0,'porch','wall',entrySpan(2)[1]-.095,2,{y:2.18,rotation:-Math.PI/2});
 for(const z of [4.95,8.8])add(0,'exterior','wall',entrySpan(z)[1]+.095,z,{y:2.1,rotation:Math.PI/2,primary:true,priority:8});
 add(1,'master','ceiling',1.34,2.36,{radius:.23,primary:true,allPriority:10,power:70,range:5.2});

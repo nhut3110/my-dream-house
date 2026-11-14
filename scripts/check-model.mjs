@@ -23,11 +23,11 @@ assert.equal(GROUND.glassLine,2.3);assert.equal(-GROUND.porchLevel,2*GROUND.step
 const {kitchen:k,fridge:f,dining:d,rear:r}=SERVICE;
 assert.ok(stairUnderside(7.15)>.9+.1,'Under-stair pantry clears slab');
 assert.ok(stairUnderside(f.z-f.width/2)>f.height+.2,'Fridge clears stair slab');
-const cookingFace=k.mirrorAxis-k.x-k.depth/2-.035;
+const cookingFace=entrySpan(d.z)[1]-.10-k.depth;
 assert.ok(cookingFace-(d.x+d.length/2)>.9,'Right cooking aisle exceeds .9 m');
 assert.ok((d.x-d.length/2)-1.195>.7,'Left storage aisle exceeds .7 m');
-assert.ok(k.end<GROUND.exit.z-GROUND.exit.width/2-.2,'Kitchen ends before side exit');
-assert.ok(r.splitX<2&&r.bedDoorX===r.entryX,'Bedroom door is in shared left side partition');assert.ok(r.bedDoorZ-.425>r.start&&r.bedDoorZ+.425<r.wcStart,'Both doors meet the shared vestibule');assert.ok(!GROUND.rightWindows.some(w=>w.z<5),'No window behind TV');assert.ok(f.width>.9&&f.height<1.9,'Side-by-side fridge envelope');assert.ok(r.start-(GROUND.exit.z+GROUND.exit.width/2)<.15,'Exit near bedroom partition');
+assert.ok(k.start>GROUND.exit.z+GROUND.exit.width/2+.25,'Kitchen starts behind relocated living-room exit');
+assert.ok(r.splitX<2&&r.bedDoorX===r.entryX,'Bedroom door is in shared left side partition');assert.ok(r.bedDoorZ-.425>r.start&&r.bedDoorZ+.425<r.wcStart,'Both doors meet the shared vestibule');assert.ok(!GROUND.rightWindows.some(w=>w.z<5),'No window behind TV');assert.ok(f.width>.9&&f.height<1.9,'Side-by-side fridge envelope');assert.ok(GROUND.exit.z-GROUND.exit.width/2>GROUND.tv.z+1.2+.2,'Exit clears the rear end of the TV wall panel');
 assert.ok(f.z+f.width/2<r.start-.1,'Fridge stays outside rear partition');
 assert.ok(d.z+d.length/2<r.start-.9,'Access before rear room doors');
 const [bed1,bed2]=REAR_FURNITURE.beds,w=REAR_FURNITURE.wardrobe;
@@ -196,3 +196,18 @@ assert.deepEqual(rectangle.map(d=>d.length),[3,4,3,4]);
 assert.ok(rectangle.every(d=>d.angle===90));
 assert.ok(polygonDimensions([[0,0],[3,0],[3,1],[1,1],[1,3],[0,3]]).some(d=>d.angle===270));
 console.log('PASS: every room edge, clockwise/counterclockwise angles, rectangles and reflex corners.');
+
+assert.ok(Math.abs((SERVICE.rear.start-.05)-REAR_FURNITURE.cabinetEnd)<1e-9,'Kitchen-facing bedroom wall aligns with fridge end panel');
+assert.ok(GROUND.exit.z+GROUND.exit.width/2<SERVICE.rear.start-.05,'Exit frame clears bedroom wall');
+assert.ok(REAR_FURNITURE.beds[0].z-.54>SERVICE.rear.start+.05+.35,'First bed clears moved front wall');
+console.log('PASS: aligned grandparents partition, side exit and bed clearance.');
+
+assert.ok(Math.abs(k.end-(r.start-.05-.01))<1e-9,'L return meets bedroom wall with 10 mm joint');
+assert.ok(k.returnLeft>r.entryX+.3,'L return clears vestibule');
+assert.ok(k.end-k.returnDepth-(d.z+.935)>.8,'Return work aisle clears occupied dining chairs');
+assert.ok(k.water.x-.18-1.195>.85,'Water station leaves passage opposite fridge');
+assert.ok(k.water.x+.18<k.returnLeft-.02,'Water station does not overlap return cabinets');
+assert.ok(k.water.z+.16<r.start-.05,'Water station stays outside bedroom wall');
+assert.ok(k.hobZ-.3>k.start&&k.hobZ+.3<k.end-k.returnDepth,'Hob clear of counter edges and corner');
+assert.ok(k.sinkX-.32>k.returnLeft&&k.sinkX+.32<entrySpan(k.sinkZ)[1]-.1-k.depth,'Sink fits the return');
+console.log('PASS: rear L kitchen, relocated exit, cooking/dining aisles and water station.');

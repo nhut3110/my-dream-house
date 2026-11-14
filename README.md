@@ -173,3 +173,13 @@ Ban công master nới 300 mm về trái: vách x=3,15 m gióng vách WC/lối v
 Các cửa sổ ngoài nhà có mái kim loại mỏng, mặt dưới gỗ, nhô khoảng 430 mm, có mép hắt nước và giằng mảnh. Bồn nước đứng danh định 1.000 L và thang thép rộng 460 mm đặt trên/sau mái chuồng cu; thang tránh cửa sân sau và hai máy. Vị trí bồn là bố trí concept, chưa tính kết cấu chịu tải mái.
 
 Đèn trang trí vách phải tầng 1–2 gióng theo cùng hai vị trí z=4,95 / 8,80 m, cao 2,10 m trên sàn mỗi tầng. Tăng sáng phòng khách/nội thất, bổ sung hai đèn tường và bốn đèn trụ cho sân trước. Khi xem riêng một tầng, hình học đèn trần chuyển opacity 12% để không che nội thất; chuyển toàn nhà sẽ trở lại vật liệu đặc.
+
+
+### Thử bếp chữ L và cửa thoát hiểm cạnh TV
+
+Cửa thoát hiểm rộng 0,95 m chuyển đến z=5,65 m, sau mép tủ TV và trước dãy bếp mới. Dãy bếp dài 3,286 m dọc tường phải, nhánh ngang sâu 0,64 m tựa vách phòng ông bà; bếp từ và hút mùi ở dãy dọc, chậu rửa ở nhánh ngang. Có kệ gia vị, thanh dao, ống dụng cụ, thớt và nồi chiên không dầu. Máy lọc nước hai vòi cong đặt cuối nhánh ngang, đối diện tủ lạnh; sau khi xoay 90° ngược chiều kim đồng hồ, mặt vòi hướng về phòng khách. Bàn ăn dịch đến x=2,80 / z=7,35 m để giữ khoảng đứng bếp hơn 0,80 m sau ghế; đèn bàn ăn và đèn tác vụ bếp đi theo bố cục mới. Đây là phương án thử bố trí, chưa phải bản vẽ kỹ thuật lắp đặt điện/nước.
+
+
+### Các chỉnh sửa hoàn thiện tầng một
+
+Cổng ngoài sân là gỗ trượt hai cánh xếp cùng một phía, bấm/chạm để đóng mở; cửa vào phòng khách vẫn là kính. Vách phòng ông bà phía bếp gióng với vách cuối tủ lạnh. Lan can mặt quay ra cửa lớn chỉ thêm ở cầu thang tầng một, bám mép bậc và chiếu nghỉ, không chặn lối lên. Khung ảnh gia đình sau sofa hiện dùng hình minh họa để thay ảnh thật sau. Bảng kích thước dùng một vùng cuộn chung trên desktop và mobile, hỗ trợ bàn phím. Biển số nhà đặt bên phải gần cổng, chữ không bị phản chiếu và có đèn chiếu trên biển.

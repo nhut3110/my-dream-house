@@ -62,7 +62,7 @@ function detailDrawing(points,color,title,holes=[]){
  return `<div class="room-detail-drawing"><svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${title}: kích thước từng cạnh"><path d="${pathOf(points,x,y)}" fill="${color}" stroke="#717a68" stroke-width="1.2"/>${holes.map(h=>`<path d="${pathOf(h,x,y)}" fill="#f6f6ef" stroke="#87917e" stroke-dasharray="3 3"/>`).join('')}${lines}</svg></div><table class="dimension-table"><thead><tr><th>Cạnh</th><th>Dài (m)</th><th>Góc tại đỉnh</th></tr></thead><tbody>${dims.map((d,i)=>`<tr><td>${d.label}–${dims[(i+1)%dims.length].label}</td><td>${fmt(d.length)}</td><td>${d.label} · ${d.angle.toLocaleString('vi-VN',{maximumFractionDigits:1})}°</td></tr>`).join('')}</tbody></table>`;
 }
 export function createRoomPlan(floor=0){
- const rooms=floor===2?roofRooms:floor===1?upperRooms:measuredRooms,el=document.createElement('section');el.id='room-measure-plan';el.hidden=true;el.setAttribute('aria-label','Mặt bằng kích thước các phòng');
+ const rooms=floor===2?roofRooms:floor===1?upperRooms:measuredRooms,el=document.createElement('section');el.id='room-measure-plan';el.hidden=true;el.tabIndex=0;el.setAttribute('aria-label','Mặt bằng kích thước các phòng');
  const colors=['#ddd6c6','#dce5cd','#e6dccd','#e2e7df','#cbdedb','#ded6e5','#d8ddd2'];
  // Same scale on both axes: the drawing and the angle measurements agree.
  const x=n=>35+n*43,y=n=>610-n*43;
