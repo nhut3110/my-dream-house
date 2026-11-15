@@ -1,9 +1,10 @@
+import {porchTileMaterial} from './exterior-tiles.js';
+import {buildFacadeDesign} from './facade-design.js';
 import {WINDER,fanPoint,fanAngle,fanHeight,fanStepPolygon,fanEntryDirection} from './stair-entry.js';
 import {railHeightAt} from './building-joints.js';
 import {buildColumns} from './structure-plan.js';
 import {SITE} from './site-plan.js';
-import {addWindowAwnings,addSmallBalcony} from './exterior-upgrades.js';
-import {trailingPlanters} from './trailing-garden.js';
+import {addSmallBalcony} from './exterior-upgrades.js';
 import {displayBookcase,securityCamera} from './home-accessories.js';
 import {buildBedroomAirConditioning} from './bedroom-ac.js';
 import {buildThirdFloor} from './third-floor.js';
@@ -152,7 +153,15 @@ function lStair(p,{arrivalRail=true,frontGuard=false}={}){
  const {x,z,width,landing,firstRisers,middleRisers,lastRisers,rise,tread,middleTread}=STAIR;
  const g=group(p);g.name='Cau_thang_chu_L';
  const firstY=firstRisers*rise,turnZ=z+width,entryX=x+landing+(firstRisers-1)*tread,rearZ=UPPER.landingStart,rearY=(firstRisers+middleRisers)*rise;
- const material=mat('#d4c6b2',.72),metal=mat('#454945',.55,{metalness:.35});
+ const material=M.wood,metal=mat('#454945',.55,{metalness:.35});
+ function sidePost(parent,edge,y,top,normal){
+  const [nx,nz]=normal,xx=edge[0]+nx*.035,zz=edge[1]+nz*.035;
+  rod(parent,[xx,y-.14,zz],[xx,top,zz],.012,metal);
+  const mount=group(parent,edge[0]+nx*.006,edge[1]+nz*.006,Math.atan2(nx,nz));
+  mount.name='Ban_ma_bat_hong_bac';mount.userData={mounting:'side',treadY:y,postBaseY:y-.14};
+  box(mount,0,y-.16,0,.064,.125,.012,metal,.006);
+  for(const yy of [y-.13,y-.065]){const bolt=new T.Mesh(new T.SphereGeometry(.009,8,6),M.dark);bolt.position.set(0,yy,.01);mount.add(bolt)}
+ }
  function cap(name,cx,cz,y,w,d){const t=group(g);t.name=name;box(t,cx,y-.065,cz,w,.065,d,material,.009)}
  function platform(name,cx,cz,y,w,d){const t=group(g);t.name=name;box(t,cx,y-.18,cz,w,.115,d,M.plaster);cap(name+'_mat',cx,cz,y,w,d)}
  function handrail(points){for(let i=1;i<points.length;i++)rod(g,points[i-1],points[i],.022,M.oak)}
@@ -165,16 +174,16 @@ function lStair(p,{arrivalRail=true,frontGuard=false}={}){
    if(i>1){const angle=fanAngle((i+.5)/WINDER.risers),[xx,zz]=fanPoint(WINDER.innerRadius+width+.012,angle),panel=group(curved,xx,zz,Math.PI/2-angle);
     box(panel,0,.08,0,.23,y-.18,.02,M.linen,.008);box(panel,.07,.15,0,.012,.075,.045,M.dark,.004)}
   }
-  for(const [radius,name] of [[WINDER.innerRadius+.02,'Lan_can_cung_trong'],[WINDER.innerRadius+width-.02,'Lan_can_cung_ngoai']]){
+  for(const [radius,name] of [[WINDER.innerRadius-.035,'Lan_can_cung_trong'],[WINDER.innerRadius+width+.035,'Lan_can_cung_ngoai']]){
    const guard=group(g);guard.name=name;const rail=[];
    for(let i=0;i<=64;i++){const t=i/64,[xx,zz]=fanPoint(radius,fanAngle(t));rail.push([xx,fanHeight(t)+.95,zz])}
    for(let i=1;i<rail.length;i++)rod(guard,rail[i-1],rail[i],.022,M.oak);
    const posts=[];
    for(let i=0;i<WINDER.risers;i++)for(const q of [.2,.6]){
     const t=(i+q)/WINDER.risers,[xx,zz]=fanPoint(radius,fanAngle(t)),y=(i+1)*rise,top=railHeightAt(rail,xx,zz);
-    rod(guard,[xx,y,zz],[xx,top,zz],.012,metal);posts.push({x:xx,z:zz,y,top})
+    const sign=name==='Lan_can_cung_trong'?-1:1,normal=[Math.cos(fanAngle(t))*sign,Math.sin(fanAngle(t))*sign];sidePost(guard,[xx-normal[0]*.035,zz-normal[1]*.035],y,top,normal);posts.push({x:xx,z:zz,y,top,mounting:'side'})
    }
-   const end=rail.at(-1);rod(guard,[end[0],firstY,end[2]],end,.012,metal);
+   const end=rail.at(-1),sign=name==='Lan_can_cung_trong'?-1:1,normal=[Math.cos(fanAngle(1))*sign,Math.sin(fanAngle(1))*sign];sidePost(guard,[end[0]-normal[0]*.035,end[2]-normal[1]*.035],firstY,end[1],normal);
    guard.userData={rail,posts,curved:true,openEntry:true};
   }
  }else{
@@ -182,15 +191,15 @@ function lStair(p,{arrivalRail=true,frontGuard=false}={}){
  box(g,x+landing/2,0,z+width/2,landing,firstY-.065,width,M.oak);cap('Chieu_nghi_dau',x+landing/2,z+width/2,firstY,landing,width);
  // One inner-side guard joins the long flight without doubling back over the landing.
  const startGuard=group(g);startGuard.name='Lan_can_bac_dau';startGuard.userData={side:'inner',sides:1};
- const edgeZ=z+width-.025,rail=[[entryX-.015,rise+.95,edgeZ]],initialPosts=[];
+ const edgeZ=z+width+.035,rail=[[entryX-.015,rise+.95,edgeZ]],initialPosts=[];
  for(let i=0;i<firstRisers;i++){
   const cx=i<firstRisers-1?entryX-(i+.5)*tread:x+width-.02,y=(i+1)*rise;
   const offsets=i===firstRisers-1?[0]:[-.065,.065];
   for(const dx of offsets)initialPosts.push({x:cx+dx,y,z:edgeZ});
   rail.push([cx,y+.95,edgeZ]);
  }
- rail.push([x+width-.02,firstY+.95,turnZ]);
- for(const post of initialPosts)rod(startGuard,[post.x,post.y,post.z],[post.x,railHeightAt(rail,post.x,post.z),post.z],.012,metal);
+ rail.push([x+width+.035,firstY+.95,turnZ]);
+ for(const post of initialPosts)sidePost(startGuard,[post.x,z+width],post.y,railHeightAt(rail,post.x,post.z),[0,1]);
  startGuard.userData.rail=rail;startGuard.userData.posts=initialPosts.map(post=>({...post,top:railHeightAt(rail,post.x,post.z)}));
  for(let i=1;i<rail.length;i++)rod(startGuard,rail[i-1],rail[i],.022,M.oak);
  const storage=group(g);storage.name='Tu_duoi_bac_dau';for(const xx of[x+.24,x+.71]){box(storage,xx,.07,z-.014,.445,.46,.025,M.linen,.012);box(storage,xx+.15,.32,z-.033,.018,.11,.018,M.dark)}
@@ -201,17 +210,17 @@ function lStair(p,{arrivalRail=true,frontGuard=false}={}){
  for(let i=count-1;i>=0;i--){const y=(firstRisers+i+1)*rise-.065;profile.push([turnZ+(i+1)*middleTread,y],[turnZ+i*middleTread,y])}
  const shape=new T.Shape(profile.map(([zz,y])=>new T.Vector2(zz,y))),geometry=new T.ExtrudeGeometry(shape,{depth:width,bevelEnabled:false,steps:1});geometry.rotateY(-Math.PI/2);
  const body=new T.Mesh(geometry,M.plaster);body.position.x=x+width;body.castShadow=body.receiveShadow=true;body.name='Than_ve_thang_lien_khoi';g.add(body);
- const middleRail=[[x+width-.02,firstY+.95,turnZ]];
- for(let i=0;i<count;i++){const cz=turnZ+(i+.5)*middleTread,y=(firstRisers+i+1)*rise;cap('Bac_doc_'+(firstRisers+i+1),x+width/2,cz,y,width,middleTread);rod(g,[x+width-.02,y,cz],[x+width-.02,y+.95,cz],.012,metal);middleRail.push([x+width-.02,y+.95,cz])}
- middleRail.push([x+width-.02,rearY+.95,rearZ]);handrail(middleRail);
+ const middleRail=[[x+width+.035,firstY+.95,turnZ]];
+ for(let i=0;i<count;i++){const cz=turnZ+(i+.5)*middleTread,y=(firstRisers+i+1)*rise;cap('Bac_doc_'+(firstRisers+i+1),x+width/2,cz,y,width,middleTread);sidePost(g,[x+width,cz],y,y+.95,[1,0]);middleRail.push([x+width+.035,y+.95,cz])}
+ middleRail.push([x+width+.035,rearY+.95,rearZ]);handrail(middleRail);
  platform('Chieu_nghi_quay_phai',x+width/2,rearZ+landing/2,rearY,width,landing);
  // Final three treads and the final rise turn right, towards the room.
- const finalRail=[[x,rearY+.95,rearZ+landing-.02],[x+width,rearY+.95,rearZ+landing-.02]];
- for(let i=0;i<lastRisers-1;i++){const cx=x+width+(i+.5)*tread,y=(firstRisers+middleRisers+i+1)*rise;box(g,cx,rearY-.18,rearZ+landing/2,tread,y-.065-(rearY-.18),landing,M.plaster);cap('Bac_re_phai_'+(i+1),cx,rearZ+landing/2,y,tread,landing);if(arrivalRail)rod(g,[cx,y,rearZ+landing-.02],[cx,y+.95,rearZ+landing-.02],.012,metal);finalRail.push([cx,y+.95,rearZ+landing-.02])}
- finalRail.push([UPPER.landingX,HEIGHT+UPPER.guardHeight,rearZ+landing-.02]);if(arrivalRail)handrail(finalRail);
+ const finalRail=[[x,rearY+.95,rearZ+landing+.035],[x+width,rearY+.95,rearZ+landing+.035]];
+ for(let i=0;i<lastRisers-1;i++){const cx=x+width+(i+.5)*tread,y=(firstRisers+middleRisers+i+1)*rise;box(g,cx,rearY-.18,rearZ+landing/2,tread,y-.065-(rearY-.18),landing,M.plaster);cap('Bac_re_phai_'+(i+1),cx,rearZ+landing/2,y,tread,landing);if(arrivalRail)sidePost(g,[cx,rearZ+landing],y,y+.95,[0,1]);finalRail.push([cx,y+.95,rearZ+landing+.035])}
+ finalRail.push([UPPER.landingX,HEIGHT+UPPER.guardHeight,rearZ+landing+.035]);if(arrivalRail)handrail(finalRail);
  platform('Chieu_toi_re_phai',UPPER.landingX+landing/2,rearZ+landing/2,HEIGHT,landing,landing);
  const [fanEntryX,fanEntryZ]=fanPoint(WINDER.innerRadius+width/2,fanAngle(0));
- g.userData={initialGuard:true,firstRisers,middleRisers,lastRisers,risers:STAIR.risers,width,entry:frontGuard?[fanEntryX,0,fanEntryZ]:[entryX,0,z+width/2],entryDirection:frontGuard?fanEntryDirection:[-1,0],turn:[x+width/2,rearY,rearZ+landing/2],exit:[UPPER.landingX+landing/2,HEIGHT,rearZ+landing/2],rightTurn:true};
+ g.userData={treadFinish:'wood-grain',railMounting:'side',initialGuard:true,firstRisers,middleRisers,lastRisers,risers:STAIR.risers,width,entry:frontGuard?[fanEntryX,0,fanEntryZ]:[entryX,0,z+width/2],entryDirection:frontGuard?fanEntryDirection:[-1,0],turn:[x+width/2,rearY,rearZ+landing/2],exit:[UPPER.landingX+landing/2,HEIGHT,rearZ+landing/2],rightTurn:true};
  return g;
 }
 function serviceRooms(p){
@@ -533,7 +542,7 @@ function furnishMasterSuite(p){
 
 function perimeter(p,index){
  for(let i=0;i<plot.length;i++){
-  if(i===1){const arc=buildingPlot.slice(1,-3);for(let j=1;j<arc.length;j++){const aa=arc[j-1],bb=arc[j];if(index===0){wall(p,aa,bb,GROUND.securityHeight+GROUND.porchLevel,.14,[],true)}else rod(p,[aa[0],1.05,aa[1]],[bb[0],1.05,bb[1]],.024,M.dark)}if(index!==0)for(let j=0;j<arc.length;j++)if(j%4===0||j===arc.length-1){const a=arc[j];rod(p,[a[0],0,a[1]],[a[0],1.05,a[1]],.012,M.dark)}continue}if(i===2)continue;
+  if(i===1){if(index===1)continue;const arc=buildingPlot.slice(1,-3);for(let j=1;j<arc.length;j++){const aa=arc[j-1],bb=arc[j];if(index===0){wall(p,aa,bb,GROUND.securityHeight+GROUND.porchLevel,.14,[],true)}else rod(p,[aa[0],1.05,aa[1]],[bb[0],1.05,bb[1]],.024,M.dark)}if(index!==0)for(let j=0;j<arc.length;j++)if(j%4===0||j===arc.length-1){const a=arc[j];rod(p,[a[0],0,a[1]],[a[0],1.05,a[1]],.012,M.dark)}continue}if(i===2)continue;
   let a=plot[i],b=i===0?buildingPlot[1]:plot[(i+1)%plot.length];const dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);
   a=[a[0]+dz/len*.095,a[1]-dx/len*.095];b=[b[0]+dz/len*.095,b[1]-dx/len*.095];
   if(i<3){
@@ -545,13 +554,13 @@ function perimeter(p,index){
     const length=Math.hypot(cut[0]-a[0],cut[1]-a[1]),vx=(cut[0]-a[0])/length,vz=(cut[1]-a[1])/length;
     wall(p,a,cut,HEIGHT-UPPER.slabThickness,.18,[{start:.4,end:2.48,bottom:.95,top:2.55}],true);
     windowOn(p,[a[0]+vx*.4,a[1]+vz*.4],[a[0]+vx*2.48,a[1]+vz*2.48],.95,2.55,true,{security:false});
-    openingAudit.push({floor:1,kind:'window',side:'front',zone:'master-pc'});railing(p,cut,b);
+    openingAudit.push({floor:1,kind:'window',side:'front',zone:'master-pc'});
    }else railing(p,a,b);continue;
   }
   if(index===2){const cuts=[0,1];for(const z of[1.92,8.5]){let t=(z-a[1])/(b[1]-a[1]);if(t>0&&t<1)cuts.push(t)}cuts.sort((a,b)=>a-b);for(let j=0;j<cuts.length-1;j++){const aa=[a[0]+(b[0]-a[0])*cuts[j],a[1]+(b[1]-a[1])*cuts[j]],bb=[a[0]+(b[0]-a[0])*cuts[j+1],a[1]+(b[1]-a[1])*cuts[j+1]],mid=(aa[1]+bb[1])/2;wall(p,aa,bb,mid>1.92&&mid<8.5?(HEIGHT-UPPER.slabThickness):1,.18,[],true)}continue}
   if(index===1&&i===3){
    const t=(MASTER_SUITE.balcony.depth-a[1])/(b[1]-a[1]),cut=[a[0]+(b[0]-a[0])*t,MASTER_SUITE.balcony.depth];
-   railing(p,a,cut);
+   // Master balcony guard is built as one continuous curved assembly.
    const length=Math.hypot(b[0]-cut[0],b[1]-cut[1]),vx=(b[0]-cut[0])/length,vz=(b[1]-cut[1])/length,windows=[];
    for(const [w,zone] of [[MASTER_SUITE.ventilationWindow,'master-ventilation'],[MASTER_SUITE.commonWindow,'common-study']]){
     const c=length*(w.z-cut[1])/(b[1]-cut[1]),start=Math.max(0,c-w.width/2),end=Math.min(length,c+w.width/2);
@@ -586,7 +595,7 @@ for(let index=0;index<1;index++){
    // Porch is a separate outside forecourt between the gate and glass door.
    const yard=clipAtZ(buildingPlot,GROUND.glassLine,true).map(toWorld);
    const porch=group(p);porch.name='Hien_2300_cao_do_am300';
-   shapeSlab(porch,yard,GROUND.porchLevel,.15,mat('#bbbdb1',.95));
+   shapeSlab(porch,yard,GROUND.porchLevel+.008,.158,porchTileMaterial());
    // Close the lower wall bases at the lowered porch without changing the parcel.
    for(let i=0;i<buildingPlot.length;i++){const a=buildingPlot[i],b=buildingPlot[(i+1)%buildingPlot.length];if(Math.min(a[1],b[1])>=GROUND.glassLine)continue;let end=b,start=a;
     if(a[1]>GROUND.glassLine){const t=(GROUND.glassLine-b[1])/(a[1]-b[1]);start=[b[0]+(a[0]-b[0])*t,GROUND.glassLine]}
@@ -666,7 +675,7 @@ facade(upperInterior,SECOND.balconyEnd,balconyLeft,balconyRight);
 wall(upperInterior,[balconyLeft,.05],[balconyLeft,SECOND.balconyEnd],HEIGHT-UPPER.slabThickness,.12,[],true);
 const balcony=group(upperInterior);balcony.name='Ban_cong_tang_2';
 shapeSlab(balcony,MASTER_BALCONY,.008,.008,mat('#c9c3b3',.9));
-trailingPlanters({parent:balcony,segments:[[[MASTER_SUITE.balcony.splitX+.07,.08],[4.8,.06]],[[5,.24],[5.05,1.28]]],center:[4.1,.85],box,rod,group,M});
+// One small flower pot on the solid guard replaces the cascading balcony planters.
 securityCamera({parent:upperInterior,position:[entrySpan(10.95)[1]+.14,2.9,10.95],target:[6.5,-2.5,-1.5],mountRotation:-Math.PI/2,name:'Camera_vach_phai_tang_2_nhin_ra_duong',box,cyl,rod,group,M});
 const upperStair=lStair(upperInterior);upperStair.name='Cau_thang_tang_2_len_3';
 // Partitions follow the owner's sketch; the front master remains empty.
@@ -715,7 +724,7 @@ buildColumns({interiors,group,box,M,wallParts});
 const plinth=shapeSlab(house,buildingPlot,-.45,.18,mat('#c0bfae'));plinth.name='Duong_bao_dat_7_dinh';
 const boundary=new T.LineLoop(new T.BufferGeometry().setFromPoints(buildingPlot.map(([x,z])=>new T.Vector3(x,z<GROUND.glassLine?GROUND.porchLevel+.005:.005,z))),new T.LineBasicMaterial({color:'#81946b'}));house.add(boundary);
 // Batch static opaque parts per parent and material, preserving the groups used by cutaway controls.
-addWindowAwnings({parents:interiors.slice(0,3),box,rod,group,M});
+buildFacadeDesign({parents:interiors.slice(0,3),box,group,shapeSlab,glassParts,M});
 const protectedMeshes=new Set(glassParts.map(part=>part.obj));
 for(const floor of floors){
  const parents=[];floor.traverse(o=>{if(o.isGroup)parents.push(o)});

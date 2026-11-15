@@ -1,4 +1,4 @@
-import {entrySpan,THIRD,plot} from './design.js';
+import {entrySpan,THIRD,UPPER,plot} from './design.js';
 
 // Include every change in parcel slope so walls and column axes share a line.
 export const shellStations=[THIRD.enclosure.front,...plot.map(p=>p[1]).filter(z=>z>THIRD.enclosure.front&&z<THIRD.enclosure.back),THIRD.enclosure.back].sort((a,b)=>a-b);
@@ -20,3 +20,11 @@ export function railHeightAt(points,x,z){
  }
  return height;
 }
+
+// Close the front lip of the stair void behind the wide terrace doorway.
+// Keep the final right-hand arrival and rear-right route open.
+export const roofStairFrontGuard={
+ a:[entrySpan(UPPER.hole.start-.05)[0],UPPER.hole.start-.05],
+ b:[THIRD.prayer.left,UPPER.hole.start-.05],
+ height:THIRD.enclosure.height,thickness:.10,
+};

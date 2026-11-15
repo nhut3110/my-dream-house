@@ -1,7 +1,7 @@
 import * as T from 'three';
 
 // Static, seeded planting: dense crown and varied cascading strands, no animation loop.
-export function trailingPlanters({parent,segments,center,box,rod,group,M,clearances=[]}){
+export function trailingPlanters({parent,segments,center,box,rod,group,M,clearances=[],rhythm=false}){
  const garden=group(parent);garden.name='Cay_ru_day_lan_can';
  const leafGeometry=new T.SphereGeometry(1,8,5);
  for(const [a,b] of segments){
@@ -16,10 +16,10 @@ export function trailingPlanters({parent,segments,center,box,rod,group,M,clearan
    for(let k=0;k<13;k++){
     const along=(k/12-.5)*(width-.04),seed=j*19+k;
     const start=new T.Vector3(x+tx*along,.94,z+tz*along);
-    let prev=start.clone();let dropLength=1.05+(Math.sin(seed*2.4)+1)*.4;
+    let prev=start.clone();let dropLength= rhythm ? .50+(Math.sin(j*1.9+x*.9+z*.7)+1)*.40+(Math.sin(seed*2.4)+1)*.12 : 1.05+(Math.sin(seed*2.4)+1)*.4;
     for(const c of clearances)if(start.x>c.minX&&Math.abs(start.z-c.z)<c.halfWidth)dropLength=Math.min(dropLength,c.maxDrop);
     for(let n=0;n<14;n++){
-     const q=n/13,reach=Math.sin(Math.min(q*3,1)*Math.PI/2)*.24;
+     const q=n/13,reach=Math.sin(Math.min(q*3,1)*Math.PI/2)*(rhythm?.47:.24);
      const sway=Math.sin(q*6+seed)*.035;
      const next=new T.Vector3(start.x-nx*reach+tx*sway,.96-q*dropLength,start.z-nz*reach+tz*sway);
      rod(garden,prev.toArray(),next.toArray(),.0035,M.leaf);prev=next;

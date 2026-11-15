@@ -1,5 +1,5 @@
 import {createPrayerDoors} from './prayer-doors.js';
-import {shellSides,shellOutline,shellRightAt,prayerInteriorOutline} from './building-joints.js';
+import {shellSides,shellOutline,shellRightAt,prayerInteriorOutline,roofStairFrontGuard} from './building-joints.js';
 import {createTerraceCanopy} from './terrace-canopy.js';
 export let terraceCanopy,prayerDoors;
 import {addRoofUtilities} from './exterior-upgrades.js';
@@ -25,14 +25,15 @@ export function buildThirdFloor(H){
   for(let j=0;j<cuts.length-1;j++){
    const point=t=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],aa=point(cuts[j]),bb=point(cuts[j+1]),front=(aa[1]+bb[1])/2<THIRD.frontEnd;
    if((aa[1]+bb[1])/2>E.front&&(aa[1]+bb[1])/2<E.back)continue;
-   rawWall(p,aa,bb,front?THIRD.terrace.parapet:1.15,.14,[],M.plaster);
-   if(front){const rail=group(p);rail.position.y=THIRD.terrace.parapet;railing(rail,aa,bb,THIRD.terrace.rail)}
+   const solidStairSide=front&&(aa[0]+bb[0])/2<.40;
+   rawWall(p,aa,bb,solidStairSide?1.15:front?THIRD.terrace.parapet:1.15,.14,[],M.plaster);
+   if(front&&!solidStairSide){const rail=group(p);rail.position.y=THIRD.terrace.parapet;railing(rail,aa,bb,THIRD.terrace.rail)}
   }
  }
- const guard=group(p);guard.name='Tuong_chan_o_thang_tang_3';
- rawWall(guard,[UPPER.hole.right+.05,THIRD.prayer.back],[UPPER.hole.right+.05,UPPER.landingStart-.05],1.05,.1);
- rawWall(guard,[UPPER.hole.right,UPPER.landingStart-.05],[UPPER.landingX,UPPER.landingStart-.05],1.05,.1);
- rawWall(guard,[UPPER.hole.left,UPPER.hole.end+.05],[UPPER.landingX,UPPER.hole.end+.05],1.05,.1);
+ const guard=group(p);guard.name='Tuong_chan_o_thang_tang_3';guard.userData.floor=2;
+ const F=roofStairFrontGuard;
+ wall(guard,F.a,F.b,F.height,F.thickness,[],true).name='Tuong_kin_mep_truoc_o_thang';
+ wall(guard,[UPPER.hole.left,UPPER.hole.end+.05],[UPPER.landingX,UPPER.hole.end+.05],E.height,.1);
  // One weather enclosure contains the stairwell, its landing and the worship room.
  const shell=group(p);shell.name='Chuong_cu_lien_khoi_thang_va_phong_tho';shell.userData.floor=2;
  const leftFront=entrySpan(E.front)[0],leftBack=entrySpan(E.back)[0];
@@ -59,7 +60,7 @@ export function buildThirdFloor(H){
  const screen=wall(prayer,[R.screen.x,R.screen.z1],[R.screen.x,R.screen.z2],R.screen.height,.12);screen.name='Vach_ngan_che_ban_tho';screen.userData={coversBothAltars:true,...R.screen};
  const cable=box(prayer,R.screen.x-.0775,.06,(R.screen.z1+R.back)/2,.035,.07,R.back-R.screen.z1-.1,M.linen);cable.name='Hop_ky_thuat_giau_day_ban_tho';
  const leftScreen=wall(prayer,[R.left,R.front],[R.left,R.back],R.screen.height,.12);leftScreen.name='Vach_trai_phong_tho_noi_lien_tuong_o_thang';
- const rearScreen=wall(prayer,[R.rearWallLeft,R.back],[R.rearWallRight,R.back],R.height,.12);rearScreen.name='Vach_sau_ban_tho_chua_loi_tu_chieu_toi';
+ const rearScreen=wall(prayer,[UPPER.hole.right,R.back],[R.rearWallRight,R.back],R.height,.12);rearScreen.name='Vach_sau_ban_tho_chua_loi_tu_chieu_toi';
  prayer.userData.arrivalRoute={side:'right',width:Math.min(shellRightAt(R.back),shellRightAt(R.front))-.09-(R.screen.x+.06),rearHallDepth:E.back-.06-(R.back+.06)};
  shapeSlab(prayer,prayerInteriorOutline,.012,.012,M.wood);
  const altar=group(prayer,R.altarX,R.altarZ);altar.name='Ban_tho_gia_tien_phia_sau';altar.userData={facing:'front',...R.ancestor};
@@ -121,7 +122,7 @@ export function buildThirdFloor(H){
   const clip=q=>{if(q[1]<THIRD.frontEnd-.15)return q;const other=q===a?b:a,t=(THIRD.frontEnd-.15-other[1])/(q[1]-other[1]);return [other[0]+t*(q[0]-other[0]),THIRD.frontEnd-.15]};
   greenSegments.push([clip(a),clip(b)]);
  }
- trailingPlanters({parent:garden,segments:greenSegments,center:[2.7,3],box,rod,group,M,clearances:BEDROOM_AC.map(s=>({minX:4.5,z:s.outdoor.z,halfWidth:s.outdoor.width/2+.15,maxDrop:1.05}))});
+ trailingPlanters({parent:garden,rhythm:true,segments:greenSegments,center:[2.7,3],box,rod,group,M,clearances:BEDROOM_AC.map(s=>({minX:4.5,z:s.outdoor.z,halfWidth:s.outdoor.width/2+.15,maxDrop:1.05}))});
  terraceCanopy=createTerraceCanopy({parent:p,box,M});
  // Covered laundry bay, with two full-size front-loading appliances facing into the yard.
  const L=THIRD.laundry,laundry=group(p);laundry.name='San_sau_giat_say';

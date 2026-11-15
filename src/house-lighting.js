@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {HEIGHT,MIRROR_X} from './design.js';
-import {LIGHTING_PLAN} from './lighting-plan.js';
+import {LIGHTING_PLAN,ADDRESS_MOUNT} from './lighting-plan.js';
 
 function gradientTexture(wash=false){
  const c=document.createElement('canvas');c.width=c.height=128;const ctx=c.getContext('2d'),data=ctx.createImageData(128,128);
@@ -36,10 +36,10 @@ export function createHouseLighting({house,floors,scene}){
    for(const x of[-.085,.085])box(g,x,0,.13,.018,.31,.018,dark);
    wash(g,spec.washUp??.8);wash(g,.8,false);
   }else if(spec.kind==='address'){
-   box(g,0,.015,.022,.065,.11,.035,dark);
+   box(g,0,.015,.008,.065,.11,.020,dark);
    box(g,0,0,.09,.46,.045,.15,dark);
    box(g,0,-.026,.095,.39,.012,.09,glow);
-   const downwash=mesh(g,new T.PlaneGeometry(.51,.42),washMaterial,0,-.29,.028);downwash.renderOrder=1;wallWashes.push(downwash);
+   // A real low-power light illuminates the plaque; no floating triangular decal.
   }else if(spec.kind==='bollard'){
    box(g,0,-spec.y/2,0,.08,spec.y,.08,dark);box(g,0,-.06,0,.085,.06,.085,glow);box(g,0,-.015,0,.11,.025,.11,dark);
   }else if(spec.kind==='step'){
@@ -54,20 +54,20 @@ export function createHouseLighting({house,floors,scene}){
   }
  }
  // Number plaque faces the lane; the two-line texture remains readable at close range.
- const sign=new T.Group();sign.name='Bien_so_nha_356_73_Hoang_Dieu';sign.position.set(3.5,1.39,-.047);sign.rotation.y=Math.PI;sign.scale.x=-1;sign.userData={side:'right-from-street',textUnmirrored:true};roots[0].add(sign);
+ const sign=new T.Group();sign.name='Bien_so_nha_356_73_Hoang_Dieu';sign.position.set(ADDRESS_MOUNT.x,ADDRESS_MOUNT.signY,ADDRESS_MOUNT.z);sign.rotation.y=Math.PI;sign.scale.x=-1;sign.userData={side:'right-from-street',textUnmirrored:true};roots[0].add(sign);
  box(sign,0,0,0,.42,.285,.026,dark);
  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=640;const ctx=canvas.getContext('2d');
  ctx.fillStyle='#283431';ctx.fillRect(0,0,1024,640);ctx.strokeStyle='#bea778';ctx.lineWidth=5;ctx.strokeRect(22,22,980,596);ctx.fillStyle='#f2e1b7';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 225px sans-serif';ctx.fillText('356/73',512,260);ctx.font='500 94px sans-serif';ctx.fillText('HOÀNG DIỆU',512,485);
  const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
- mesh(sign,new T.PlaneGeometry(.405,.27),new T.MeshBasicMaterial({map:texture}),0,0,.015);
+ mesh(sign,new T.PlaneGeometry(.405,.27),new T.MeshStandardMaterial({map:texture,roughness:.85}),0,0,.015);
  // Batch static housings and luminous surfaces per floor; keep the fixture plan as metadata.
  for(const root of roots){
   const buckets=new Map();root.updateMatrixWorld(true);const inverse=root.matrixWorld.clone().invert();
-  root.traverse(o=>{if(!o.isMesh||![dark,white,glow].includes(o.material))return;let owner=o.parent;while(owner!==root&&!owner.userData.kind)owner=owner.parent;const wall=owner.userData.kind==='wall'||(owner.userData.kind==='step'&&owner.userData.y>.72);o.userData.wallFixture=wall;const ceiling=['ceiling','pendant'].includes(owner.userData.kind);o.userData.ceilingFixture=ceiling;const key=o.material.uuid+ceiling+wall;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(o)});
+  root.traverse(o=>{if(!o.isMesh||![dark,white,glow].includes(o.material))return;let owner=o.parent;while(owner!==root&&!owner.userData.kind)owner=owner.parent;const wall=owner.userData.kind==='wall'||(owner.userData.kind==='step'&&owner.userData.y>.72);o.userData.wallFixture=wall;const ceiling=['ceiling','pendant'].includes(owner.userData.kind);o.userData.ceilingFixture=ceiling;o.userData.porchCeiling=!!owner.userData.porchCeiling;const key=o.material.uuid+ceiling+wall+o.userData.porchCeiling;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(o)});
   for(const list of buckets.values()){
    const geometries=list.map(o=>{let geo=o.geometry.clone();if(geo.index){const old=geo;geo=geo.toNonIndexed();old.dispose()}geo.applyMatrix4(inverse.clone().multiply(o.matrixWorld));return geo});
    const merged=mergeGeometries(geometries,false);geometries.forEach(g=>g.dispose());
-   const batch=new T.Mesh(merged,list[0].material);batch.name='Den_gop_hinh_hoc_tinh';batch.castShadow=false;if(list[0].userData.wallFixture)wallBatches.push(batch);if(list[0].userData.ceilingFixture){const ghost=batch.material.clone();ghost.transparent=true;ghost.opacity=.12;ghost.depthWrite=false;ceilingBatches.push({mesh:batch,solid:batch.material,ghost});}root.add(batch);for(const o of list)o.removeFromParent();
+   const batch=new T.Mesh(merged,list[0].material);batch.name='Den_gop_hinh_hoc_tinh';batch.castShadow=false;if(list[0].userData.wallFixture)wallBatches.push(batch);if(list[0].userData.ceilingFixture){const ghost=batch.material.clone();ghost.transparent=true;ghost.opacity=.12;ghost.depthWrite=false;ceilingBatches.push({mesh:batch,solid:batch.material,ghost,porchCeiling:list[0].userData.porchCeiling});}root.add(batch);for(const o of list)o.removeFromParent();
   }
  }
  // Fixed light budget: no extra shadow-map renders and no shader recompilation on toggles.
@@ -75,8 +75,8 @@ export function createHouseLighting({house,floors,scene}){
  let view='all',nightMix=0;
  function update(){
   const active=LIGHTING_PLAN.filter(s=>s.primary&&(view==='all'||+view===s.floor)).toSorted((a,b)=>view==='all'?(b.allPriority||0)-(a.allPriority||0):(b.priority||0)-(a.priority||0)).slice(0,slots.length);
-  slots.forEach((light,i)=>{const s=active[i];if(!s){light.intensity=0;return}const offset=s.kind==='wall'?.22:0;light.position.set(MIRROR_X-s.x-Math.sin(s.rotation||0)*offset,HEIGHT*s.floor+s.y-(s.kind==='ceiling'?.25:0),s.z+Math.cos(s.rotation||0)*offset);light.color.set(s.kelvin>=3500?'#ffe5c5':'#ffd5a0');light.intensity=nightMix*(s.power??(s.kind==='wall'?22:62));light.distance=s.range??(s.kind==='wall'?4.1:5.1);});
+  slots.forEach((light,i)=>{const s=active[i];if(!s){light.intensity=0;return}const offset=s.kind==='wall'?.22:s.kind==='address'?.12:0;light.position.set(MIRROR_X-s.x-Math.sin(s.rotation||0)*offset,HEIGHT*s.floor+s.y-(s.kind==='ceiling'?.25:0),s.z+Math.cos(s.rotation||0)*offset);light.color.set(s.kelvin>=3500?'#ffe5c5':'#ffd5a0');light.intensity=nightMix*(s.power??(s.kind==='wall'?22:62));light.distance=s.range??(s.kind==='wall'?4.1:5.1);});
   glow.emissiveIntensity=.05+nightMix*1.8;washMaterial.opacity=nightMix*.72;poolMaterial.opacity=nightMix*.36;
  }
- return {plan:LIGHTING_PLAN,fixtures,slots,setView(mode,lowWalls=false){view=mode;fixtures.forEach(f=>{if(f.userData.kind==='wall'||(f.userData.kind==='step'&&f.userData.y>.72))f.visible=!lowWalls;});wallBatches.forEach(b=>b.visible=!lowWalls);ceilingBatches.forEach(b=>b.mesh.material=mode==='all'?b.solid:b.ghost);wallWashes.forEach(m=>m.visible=!lowWalls);update()},setMix(value){nightMix=value;update()},stats:()=>({fixtures:fixtures.length,view,nightMix,activeLights:slots.filter(l=>l.intensity>0).length,lightBudget:slots.length,address:'356/73 Hoàng Diệu'})};
+ return {plan:LIGHTING_PLAN,fixtures,slots,setView(mode,lowWalls=false){view=mode;fixtures.forEach(f=>{if(f.userData.kind==='wall'||(f.userData.kind==='step'&&f.userData.y>.72))f.visible=!lowWalls;});wallBatches.forEach(b=>b.visible=!lowWalls);ceilingBatches.forEach(b=>{b.mesh.visible=!(lowWalls&&b.porchCeiling);b.mesh.material=mode==='all'?b.solid:b.ghost;});wallWashes.forEach(m=>m.visible=!lowWalls);update()},setMix(value){nightMix=value;update()},stats:()=>({fixtures:fixtures.length,view,nightMix,activeLights:slots.filter(l=>l.intensity>0).length,lightBudget:slots.length,address:'356/73 Hoàng Diệu'})};
 }

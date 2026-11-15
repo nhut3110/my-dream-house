@@ -276,11 +276,15 @@ for(const progress of[0,.03,.1,.15,.5,.9,1,.5,0]){
 }
 console.log('PASS: retractable front terrace roof footprint, stack clearance and reversible panel poses.');
 
-assert.ok(!LIGHTING_PLAN.some(l=>l.floor===0&&l.zone==='porch'&&l.kind==='ceiling'),'Porch has no unsupported ceiling fixture in single-floor view');
-const porchLamp=LIGHTING_PLAN.find(l=>l.floor===0&&l.zone==='porch'&&l.primary);
-assert.equal(porchLamp.kind,'wall');assert.ok(porchLamp.y+.18<GROUND.securityHeight+GROUND.porchLevel,'Porch wall fixture fits below security wall top');
-assert.ok(Math.abs(porchLamp.x-(entrySpan(porchLamp.z)[1]+.005))<1e-8,'Porch lamp backplate meets inner wall surface');
-console.log('PASS: porch light mounted to wall, with no floating ceiling fixture.');
+const porchLamps=LIGHTING_PLAN.filter(l=>l.floor===0&&l.porchCeiling);
+assert.equal(porchLamps.length,2,'Two compact downlights span the porch');
+assert.ok(!LIGHTING_PLAN.some(l=>l.floor===0&&['porch','front-facade'].includes(l.zone)&&l.kind==='wall'),'No wall sconces remain at the porch entrance');
+for(const l of porchLamps){
+ assert.equal(l.kind,'ceiling');
+ assert.ok(Math.abs(l.y+.015-(HEIGHT-.23))<1e-8,'Downlight housing meets underside of timber soffit');
+ assert.ok(l.x-l.radius>.12&&l.x+l.radius<4.72&&l.z-l.radius>.19&&l.z+l.radius<2.17,'Complete housing stays inside timber soffit');
+}
+console.log('PASS: porch downlights fixed to timber soffit; hidden with it in cutaway views.');
 
 // Check the paired concept column axes against openings on both occupied floors.
 assert.equal(columnPlan.length,10);
@@ -478,3 +482,80 @@ for(let i=1;i<approach.length;i++)for(let j=0;j<=20;j++){
 assert.ok(fanMinZ-(GROUND.tv.z+1.2)>.15,'Curved stair and left TV panel have a physical gap, measured from real fan footprint');
 assert.ok(entrySpan(d.z)[1]-.09-SERVICE.kitchen.depth-(d.x+d.length/2)>.80,'Corner trial retains over 800 mm beside kitchen');
 console.log('PASS: swapped living room, real TV/fan separation, 500 mm stair approach and kitchen aisle.');
+
+// Exterior finish must track the parcel bends and leave existing glazed openings/exit clear.
+const {FACADE,facadePath,facadeRibbon,offsetFacadePath}=await import('../src/facade-design.js');
+assert.ok(facadePath.length>8,'Keep the sampled rounded street corner');
+for(const path of [facadePath,facadePath.filter(p=>p[1]<.58)]){
+ const ribbon=facadeRibbon(path,FACADE.band.inset,FACADE.band.outset);
+ assert.equal(ribbon.length,path.length*2);
+ assert.ok(ribbon.every(p=>p.every(Number.isFinite)),'No degenerate facade vertices');
+ const outer=offsetFacadePath(path,FACADE.band.outset);
+ outer.forEach((p,i)=>assert.ok(Math.hypot(p[0]-path[i][0],p[1]-path[i][1])<.19,'No long mitre spikes at corners'));
+}
+for(const w of FACADE.windows){
+ assert.ok(w.head>w.sill&&w.width>0&&w.head+.123<HEIGHT-FACADE.band.height,'Hoods below floor band');
+}
+assert.ok(GROUND.exit.z-GROUND.exit.width/2>.58,'Stone base starts before exit');
+assert.ok(!source.includes('addWindowAwnings({'),'No duplicate old awnings');
+console.log('PASS: finite curved facade ribbons, bounded projections, hood heights and removal of duplicate awnings.');
+
+// A wall skin crossing the parcel kink must be split there; otherwise diagonal
+// triangles cut through the original wall, despite every input corner looking correct.
+const THREE=await import('three');
+const {foldSideGeometry}=await import('../src/facade-design.js');
+const testSkin=new THREE.ExtrudeGeometry(new THREE.Shape([
+ new THREE.Vector2(-10,.2),new THREE.Vector2(-6,.2),new THREE.Vector2(-6,3.3),new THREE.Vector2(-10,3.3)
+]),{depth:.035,bevelEnabled:false});
+const folded=foldSideGeometry(testSkin),pp=folded.getAttribute('position');
+for(let i=0;i<pp.count;i+=3){
+ const center=[0,0,0];
+ for(let j=0;j<3;j++)for(let k=0;k<3;k++)center[k]+=pp.array[(i+j)*3+k]/3;
+ const depths=[0,1,2].map(j=>pp.getX(i+j)-entrySpan(pp.getZ(i+j))[1]-.118);
+ assert.ok(depths.every(d=>d>-.00001&&d<.03501),'Cladding lies outside the wall');
+ assert.ok(Math.abs(center[0]-entrySpan(center[2])[1]-.118-depths.reduce((a,b)=>a+b,0)/3)<.00001,'Every folded face follows the real wall plane');
+}
+testSkin.dispose();folded.dispose();
+console.log('PASS: folded exterior triangles follow the slope on both sides of the parcel kink.');
+
+// Regression: intersecting window/AC holes previously produced triangles across glass.
+// Tile subtraction must remain disjoint and clear even for overlapping openings.
+const {subtractOpenings,tiledRectangles}=await import('../src/exterior-tiles.js');
+const bounds={x1:0,x2:4,y1:0,y2:4};
+const cuts=[{x1:1,x2:3,y1:1,y2:3},{x1:2,x2:3.5,y1:2,y2:3.5}];
+const pieces=subtractOpenings(bounds,cuts),area=r=>(r.x2-r.x1)*(r.y2-r.y1);
+assert.ok(Math.abs(pieces.reduce((n,r)=>n+area(r),0)-10.75)<1e-8,'Subtract union of overlapping holes once');
+const overlap=(a,b)=>Math.min(a.x2,b.x2)-Math.max(a.x1,b.x1)>1e-7&&Math.min(a.y2,b.y2)-Math.max(a.y1,b.y1)>1e-7;
+for(const rects of [pieces,tiledRectangles(bounds,cuts)])for(let i=0;i<rects.length;i++){
+ assert.ok(!cuts.some(c=>overlap(rects[i],c)),'No finish in an opening');
+ assert.ok(!rects.slice(i+1).some(c=>overlap(rects[i],c)),'No stacked tile fragments');
+}
+const finishSource=fs.readFileSync(new URL('../src/facade-design.js',import.meta.url),'utf8');
+assert.ok(!finishSource.includes('Mang_lon_xanh_khoang_hong'),'Remove faulty green window overlay');
+console.log('PASS: tile/opening subtraction handles intersecting holes without covering glazing or overlapping pieces.');
+
+const {roofStairFrontGuard:roofFront}=await import('../src/building-joints.js');
+assert.ok(roofFront.a[0]-roofFront.thickness/2<=UPPER.hole.left&&roofFront.b[0]+roofFront.thickness/2>=UPPER.hole.right,'Front wall spans the complete stair void');
+assert.ok(Math.abs(roofFront.a[1]+roofFront.thickness/2-UPPER.hole.start)<1e-8,'Front guard sits on solid slab, flush with void edge');
+assert.equal(roofFront.height,THIRD.enclosure.height,'Front stair barrier reaches the enclosure roof');
+assert.ok(THIRD.enclosure.frontDoor.left+THIRD.enclosure.frontDoor.width-(roofFront.b[0]+roofFront.thickness/2)>3,'Terrace doorway retains over 3 m clear beside stair wall');
+const {ADDRESS_MOUNT}=await import('../src/lighting-plan.js');
+const tileFace=.043199780982963176+(-.0206-.043199780982963176)*ADDRESS_MOUNT.x/4.8405875785593295-.031-.106/2;
+assert.ok(Math.abs(ADDRESS_MOUNT.z+.026/2-tileFace)<.002,'Address plaque back sits flush against finished tile face');
+console.log('PASS: roof stair front edge is fully enclosed, terrace entrance stays clear, address plaque clears tile.');
+
+// Balcony privacy guard uses a continuous sampled corner, with no separately offset joints.
+const {masterBalconyGuardPath}=await import('../src/facade-design.js');
+const masterGuardPath=masterBalconyGuardPath();
+assert.ok(masterGuardPath.length>16,'Curved balcony corner keeps its smooth samples');
+for(let i=1;i<masterGuardPath.length;i++){
+ assert.ok(masterGuardPath[i].every(Number.isFinite),'Guard coordinates are finite');
+ assert.ok(Math.hypot(masterGuardPath[i][0]-masterGuardPath[i-1][0],masterGuardPath[i][1]-masterGuardPath[i-1][1])>.001,'No zero-length rail section at joins');
+}
+assert.equal(masterGuardPath.at(-1)[1],M.balcony.depth,'Guard returns all the way to the side wall');
+const entryFrontLamp=LIGHTING_PLAN.find(l=>l.floor===0&&l.zone==='front-facade');
+assert.equal(entryFrontLamp.kind,'ceiling','Front entrance uses a soffit downlight instead of a wall sconce');
+const masterFrontLamp=LIGHTING_PLAN.find(l=>l.floor===1&&l.zone==='front-facade');
+assert.ok(masterFrontLamp.x+.095<3.04&&masterFrontLamp.x-.095>2.745,'Master front lamp fits inside the timber-backed strip');
+assert.ok(Math.abs(ADDRESS_MOUNT.lightZ-tileFace)<.002,'Address lamp mounting plate meets the finished wall');
+console.log('PASS: continuous master balcony guard and supported facade/address fixture locations.');

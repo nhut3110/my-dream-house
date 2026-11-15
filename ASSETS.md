@@ -53,3 +53,7 @@ Sofa chữ L 2,30 × 1,62 m là mô hình tham số tự dựng trong `src/house
 - [bantho.net combined room](https://bantho.net/mau-ban-tho-phat-va-2-ban-tho-gia-tien-chung-phong-tho): 127 × 61 cm Buddhist table reference footprint.
 
 Original procedural geometry; reference images/models are not copied or redistributed. Current option keeps owner-requested Buddha-front / ancestors-back arrangement, not a claim of universal ritual correctness. Ancestor tabletop 153 × 61 × 107 cm, Buddhist tabletop 127 × 61 × 127 cm. The 100 mm gap is an intentional compact furniture separation, not a walking/service aisle; servicing is from the sides. Side screen reduced 185 → 145 cm, retains concealment of legs/cable route; front tabletop overhangs screen by 15 mm.
+
+## Exterior finish concept — Nếp
+
+See [FACADE.md](FACADE.md) for architectural references and dimensions. New cornices, ceramic ribs, window frames and soffit are original procedural Three.js geometry. Reference photos were reviewed externally and are not included in project assets.
