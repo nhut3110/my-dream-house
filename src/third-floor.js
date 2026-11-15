@@ -1,3 +1,4 @@
+import {shellSides,shellOutline,shellRightAt,prayerInteriorOutline} from './building-joints.js';
 import {createTerraceCanopy} from './terrace-canopy.js';
 export let terraceCanopy;
 import {addRoofUtilities} from './exterior-upgrades.js';
@@ -16,7 +17,9 @@ export function buildThirdFloor(H){
  const boundary=buildingPlot.map(toWorld);
  for(let i=0;i<boundary.length;i++){
   let a=boundary[i],b=boundary[(i+1)%boundary.length];
-  const inset=v=>{const dx=2.7-v[0],dz=6.6-v[1],d=Math.hypot(dx,dz);return [v[0]+dx/d*.075,v[1]+dz/d*.075]};a=inset(a);b=inset(b);
+  const inset=v=>{const dx=2.7-v[0],dz=6.6-v[1],d=Math.hypot(dx,dz);return [v[0]+dx/d*.075,v[1]+dz/d*.075]};
+  // Long party/side walls meet the shell exactly at front/back boundaries.
+  if(Math.abs(b[1]-a[1])>1){const side=(a[0]+b[0])/2<2.7?0:1;const align=v=>[entrySpan(Math.max(.6,Math.min(13.15,v[1])))[side],v[1]];a=align(a);b=align(b)}else{a=inset(a);b=inset(b)}
   const cuts=[0,1];for(const z of[E.front,E.back]){const t=(z-a[1])/(b[1]-a[1]);if(t>0&&t<1)cuts.push(t)}cuts.sort((x,y)=>x-y);
   for(let j=0;j<cuts.length-1;j++){
    const point=t=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t],aa=point(cuts[j]),bb=point(cuts[j+1]),front=(aa[1]+bb[1])/2<THIRD.frontEnd;
@@ -32,14 +35,13 @@ export function buildThirdFloor(H){
  // One weather enclosure contains the stairwell, its landing and the worship room.
  const shell=group(p);shell.name='Chuong_cu_lien_khoi_thang_va_phong_tho';shell.userData.floor=2;
  const leftFront=entrySpan(E.front)[0],leftBack=entrySpan(E.back)[0];
- wall(shell,[leftFront,E.front],[leftBack,E.back],E.height,.12,[],true);
- wall(shell,[E.right,E.front],[E.right,E.back],E.height,.12,[],true);
+ for(const side of shellSides)for(let i=1;i<side.length;i++)wall(shell,side[i-1],side[i],E.height,.18,[],true);
  const frontDoor=E.frontDoor,rearDoor=E.rearDoor;
- wall(shell,[leftFront,E.front],[E.right,E.front],E.height,.12,[
+ wall(shell,[leftFront,E.front],[shellRightAt(E.front),E.front],E.height,.12,[
   {start:frontDoor.left-leftFront,end:frontDoor.left+frontDoor.width-leftFront,bottom:0,top:2.3},
   {start:3.2-leftFront,end:4.6-leftFront,bottom:.7,top:2.4}
  ],true);
- wall(shell,[leftBack,E.back],[E.right,E.back],E.height,.12,[{start:rearDoor.left-leftBack,end:rearDoor.left+rearDoor.width-leftBack,bottom:0,top:2.3}],true);
+ wall(shell,[leftBack,E.back],[shellRightAt(E.back),E.back],E.height,.12,[{start:rearDoor.left-leftBack,end:rearDoor.left+rearDoor.width-leftBack,bottom:0,top:2.3}],true);
  function exteriorDoor(left,z,width,name){
   const g=group(shell,left+width/2,z);g.name=name;
   box(g,0,.04,0,width-.08,2.21,.028,M.glass);
@@ -56,8 +58,8 @@ export function buildThirdFloor(H){
  const R=THIRD.prayer,prayer=group(p);prayer.name='Phong_tho_quay_ra_truoc';prayer.userData.floor=2;
  wall(prayer,[R.left,R.front],[R.left,R.back],R.height,.12,[{start:R.sideDoorStart-R.front,end:R.sideDoorStart+R.sideDoorWidth-R.front,bottom:0,top:2.28}]);
  bedroomSlidingDoor(prayer,R.left,R.sideDoorStart+R.sideDoorWidth/2,R.sideDoorWidth,'Cua_phong_tho_tu_sanh',Math.PI/2);
- wall(prayer,[R.left,R.back],[R.right,R.back],R.height,.12);
- shapeSlab(prayer,[[R.left+.06,R.front+.06],[R.right-.06,R.front+.06],[R.right-.06,R.back-.06],[R.left+.06,R.back-.06]],.012,.012,M.wood);
+ wall(prayer,[R.left,R.back],[shellRightAt(R.back),R.back],R.height,.12);
+ shapeSlab(prayer,prayerInteriorOutline,.012,.012,M.wood);
  const altar=group(prayer,R.altarX,R.altarZ);altar.name='Ban_tho_gia_tien_huong_truoc';altar.userData.facing='front';
  const timber=mat('#75523b',.7);
  for(const x of[-.63,.63])for(const z of[-.21,.21])box(altar,x,.04,z,.085,.92,.085,timber,.01);
@@ -70,7 +72,15 @@ export function buildThirdFloor(H){
  rug(prayer,R.altarX,7.55,1.95,1.2);
  for(const x of[R.altarX-.36,R.altarX+.36])box(prayer,x,.035,7.65,.52,.07,.62,M.linen,.04);
  const roof=group(p);roof.name='Mai_kin_chung_cau_thang_phong_tho';roof.userData={floor:2,coversStairOpening:true,slope:E.roofSlope};
- const roofOutline=[[leftFront-.06,E.front-.2],[E.right+.12,E.front-.2],[E.right+.12,E.back+.12],[leftBack-.06,E.back+.12]];
+ const roofOutline=shellOutline.map(([x,z])=>[x+(x<2.7?-.12:.12),z===E.front?z-.2:z===E.back?z+.12:z]);
+ // Continuous perimeter ring visually ties wall heads to the existing column axes.
+ const ring=group(shell);ring.name='Dai_dau_tuong_chuong_cu';
+ for(let i=0;i<shellOutline.length;i++){
+  const a=shellOutline[i],b=shellOutline[(i+1)%shellOutline.length];
+  const beam=group(ring,a[0],a[1],-Math.atan2(b[1]-a[1],b[0]-a[0]));
+  box(beam,Math.hypot(b[0]-a[0],b[1]-a[1])/2,E.height-.2,0,Math.hypot(b[0]-a[0],b[1]-a[1]),.2,.25,M.stone);
+ }
+ glassParts.push({obj:ring,floor:2,hideCut:true});
  const cover=shapeSlab(roof,roofOutline,E.height+E.roofThickness,E.roofThickness,M.stone);
  const pos=cover.geometry.attributes.position;
  for(let i=0;i<pos.count;i++)if(pos.getY(i)>E.roofThickness-.001)pos.setY(i,pos.getY(i)+E.roofSlope*(E.back+.12-pos.getZ(i)));
@@ -79,8 +89,8 @@ export function buildThirdFloor(H){
  // Gutters drain outside the enclosed stairwell; raised sills separate the yards.
  const roofDrain=group(roof);roofDrain.name='Mang_va_ong_thoat_mai_ngoai_o_thang';
  const drainage=group(p);drainage.name='Thu_nuoc_ngoai_chan_cua';
- box(roofDrain,(leftBack+E.right)/2,E.height+.07,E.back+.12,E.right-leftBack+.18,.06,.09,M.dark);
- rod(roofDrain,[5.11,E.height+.1,E.back+.12],[5.11,.12,E.back+.12],.035,M.dark);
+ box(roofDrain,(leftBack+shellRightAt(E.back))/2,E.height+.07,E.back+.12,shellRightAt(E.back)-leftBack+.18,.06,.09,M.dark);
+ rod(roofDrain,[shellRightAt(E.back)+.09,E.height+.1,E.back+.12],[shellRightAt(E.back)+.09,.12,E.back+.12],.035,M.dark);
  for(const [door,z] of[[frontDoor,E.front-.25],[rearDoor,E.back+.25]]){
   box(drainage,door.left+door.width/2,.002,z,door.width+.24,.014,.12,M.dark);
   for(let x=door.left-.06;x<door.left+door.width+.1;x+=.055)box(drainage,x,.016,z,.012,.005,.1,M.stone);

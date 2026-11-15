@@ -91,7 +91,18 @@ renderer.domElement.addEventListener('pointerup',e=>{
 let previousFrame=performance.now();
 function tick(now){const dt=Math.min((now-previousFrame)/1000,.05);previousFrame=now;if(document.hidden){requestAnimationFrame(tick);return}let moving=false;if(canopyTransition){const t=Math.min(1,(now-canopyTransition.time)/1200),e=t*t*(3-2*t);terraceCanopy.setProgress(T.MathUtils.lerp(canopyTransition.from,canopyTransition.to,e));invalidate(true);moving=true;if(t===1)canopyTransition=null;}if(doorTransition){const t=Math.min(1,(now-doorTransition.time)/650),e=t*t*(3-2*t);setEntranceProgress(T.MathUtils.lerp(doorTransition.from,doorTransition.to,e));invalidate(true);moving=true;if(t===1)doorTransition=null}if(lightingTransition){const t=Math.min(1,(now-lightingTransition.time)/650),e=t*t*(3-2*t);applyLighting(T.MathUtils.lerp(lightingTransition.from,lightingTransition.to,e));moving=true;if(t===1)lightingTransition=null}if(transition){const t=Math.min(1,(now-transition.time)/650),e=1-Math.pow(1-t,3);camera.position.lerpVectors(transition.start.p,transition.end.p,e);controls.target.lerpVectors(transition.start.t,transition.end.t,e);camera.zoom=T.MathUtils.lerp(transition.start.z,transition.end.z,e);camera.updateProjectionMatrix();moving=true;if(t===1)transition=null}moving=freeNav.update(dt)||moving;if(!freeNav.free)controls.update();if(dirty||moving||performance.now()-lastChange<100){renderer.render(scene,camera);frames++;drawLabels();dirty=false}requestAnimationFrame(tick)}
 requestAnimationFrame(tick);resize();setHouseView(mode,low);targetCamera(false);
-loadFurniture(()=>{setHouseView(mode,low);invalidate(true);document.querySelector('#loading').style.opacity='0';setTimeout(()=>document.querySelector('#loading').remove(),500);document.querySelector('#status').textContent=assetState.failed.length?'Có nội thất chưa tải được':'Phương án bo góc · Có lưu đường đất gốc';window.houseDemo.ready=true});
+loadFurniture(()=>{
+ setHouseView(mode,low);invalidate(true);
+ requestAnimationFrame(()=>{
+  renderer.render(scene,camera);frames++;
+  requestAnimationFrame(()=>{
+   document.documentElement.classList.remove('booting');
+   const loading=document.querySelector('#loading');loading.classList.add('is-leaving');
+   setTimeout(()=>loading.remove(),300);
+   document.querySelector('#status').textContent=assetState.failed.length?'Có nội thất chưa tải được':'Phương án bo góc · Có lưu đường đất gốc';window.houseDemo.ready=true;
+  });
+ });
+});
 const floorNav=document.querySelector('#floor-options');
 for(const [floor,name,detail] of [['1','Tầng hai','Master · Phòng nhỏ · Khu chung'],['2','Tầng ba','Phòng thờ · Sân · Giặt phơi'],['all','Liên tầng','Cả ba tầng']]){const b=document.createElement('button');b.className='floor-option';b.dataset.floor=floor;b.innerHTML=`<span class="floor-index">${floor==='all'?'↗':'0'+(+floor+1)}</span><span>${name}<small>${detail}</small></span>`;floorNav.appendChild(b)}
 document.querySelectorAll('[data-floor]').forEach(b=>b.addEventListener('click',()=>updateView(b.dataset.floor)));

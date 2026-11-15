@@ -1,3 +1,4 @@
+import {shellSides,shellRightAt,prayerInteriorOutline} from './building-joints.js';
 import {GROUND,STAIR,SERVICE,entrySpan,clipAtZ,plot,toWorld,buildingPlot,SECOND,UPPER,UPPER_LAYOUT,SMALL_SUITE,MASTER_SUITE,MASTER_BALCONY,SMALL_BALCONY,THIRD} from './design.js';
 const r=SERVICE.rear;
 const dry=MASTER_SUITE.washbasin.niche;
@@ -23,11 +24,12 @@ export const upperRooms=[
  {name:'Bục gỗ',points:[[UPPER_LAYOUT.deck.x1,UPPER_LAYOUT.deck.z1],[UPPER_LAYOUT.deck.x2,UPPER_LAYOUT.deck.z1],[UPPER_LAYOUT.deck.x2,UPPER_LAYOUT.deck.z2],[UPPER_LAYOUT.deck.x1,UPPER_LAYOUT.deck.z2]],note:'Cao 14 cm; sảnh đi lại bên trái giữ nguyên cao độ sàn'}
 ];
 const R=THIRD.prayer,L=THIRD.laundry,E=THIRD.enclosure;
-const enclosedOutline=[[entrySpan(E.front)[0]+.06,E.front+.06],[E.right-.06,E.front+.06],[E.right-.06,E.back-.06],[entrySpan(E.back)[0]+.06,E.back-.06]];
+const enclosedOutline=[...shellSides[0].map(([x,z])=>[x+.09,Math.max(E.front+.06,Math.min(E.back-.06,z))]),...shellSides[1].toReversed().map(([x,z])=>[x-.09,Math.max(E.front+.06,Math.min(E.back-.06,z))])];
+const prayerOutline=prayerInteriorOutline;
 export const roofRooms=[
  {name:'Sân thượng trước',points:clipAtZ(buildingPlot,THIRD.frontEnd,true).map(toWorld),note:'Tường thấp + lan can phủ cây rủ; giữa sân để thoáng'},
- {name:'Sảnh · thang có mái',points:enclosedOutline,holes:[[[R.left-.06,R.front+.06],[R.right-.06,R.front+.06],[R.right-.06,R.back+.06],[R.left-.06,R.back+.06]]],note:'Cùng khối chuồng cu với phòng thờ; diện tích gồm hình chiếu ô thang'},
- {name:'Phòng thờ',points:[[R.left+.06,R.front+.06],[R.right-.06,R.front+.06],[R.right-.06,R.back-.06],[R.left+.06,R.back-.06]],note:'Bàn thờ quay về trước nhà; cửa bên hông từ sảnh thang'},
+ {name:'Sảnh · thang có mái',points:enclosedOutline,holes:[[[R.left-.06,R.front+.06],[shellRightAt(R.front)-.09,R.front+.06],...shellSides[1].filter(v=>v[1]>R.front&&v[1]<R.back).map(([x,z])=>[x-.09,z]),[shellRightAt(R.back)-.09,R.back+.06],[R.left-.06,R.back+.06]]],note:'Cùng khối chuồng cu với phòng thờ; diện tích gồm hình chiếu ô thang'},
+ {name:'Phòng thờ',points:prayerOutline,note:'Bàn thờ quay về trước nhà; cửa bên hông từ sảnh thang'},
  {name:'Sân sau',points:clipAtZ(buildingPlot,THIRD.rearStart,false).map(toWorld),note:'Giặt tay và giàn phơi lộ thiên; máy có mái đưa riêng'},
  {name:'Mái che hai máy',points:[[L.x1,L.z1],[L.x2,L.z1],[L.x2,L.z2],[L.x1,L.z2]],note:'Mái đưa ngắn từ chuồng cu, chỉ che hai máy bên trái'},
 ];

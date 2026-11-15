@@ -1,3 +1,5 @@
+import {shellSides,shellOutline,railHeightAt} from '../src/building-joints.js';
+import {STRUCTURE,columnPlan} from '../src/structure-plan.js';
 import {SITE,gateRampCorners,streetPolygon} from '../src/site-plan.js';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -270,3 +272,39 @@ for(const progress of[0,.03,.1,.15,.5,.9,1,.5,0]){
  }
 }
 console.log('PASS: retractable front terrace roof footprint, stack clearance and reversible panel poses.');
+
+assert.ok(!LIGHTING_PLAN.some(l=>l.floor===0&&l.zone==='porch'&&l.kind==='ceiling'),'Porch has no unsupported ceiling fixture in single-floor view');
+const porchLamp=LIGHTING_PLAN.find(l=>l.floor===0&&l.zone==='porch'&&l.primary);
+assert.equal(porchLamp.kind,'wall');assert.ok(porchLamp.y+.18<GROUND.securityHeight+GROUND.porchLevel,'Porch wall fixture fits below security wall top');
+assert.ok(Math.abs(porchLamp.x-(entrySpan(porchLamp.z)[1]+.005))<1e-8,'Porch lamp backplate meets inner wall surface');
+console.log('PASS: porch light mounted to wall, with no floating ceiling fixture.');
+
+// Check the paired concept column axes against openings on both occupied floors.
+assert.equal(columnPlan.length,10);
+assert.equal(new Set(columnPlan.map(c=>c.id)).size,10);
+for(const z of STRUCTURE.axes){
+ const pair=columnPlan.filter(c=>c.z===z);
+ assert.equal(pair.length,2);assert.notEqual(pair[0].side,pair[1].side);
+ assert.ok(pair[1].x-pair[0].x>3);
+}
+const rightOpenings=[...GROUND.rightWindows,MASTER_SUITE.ventilationWindow,MASTER_SUITE.commonWindow,SMALL_SUITE.window,{z:GROUND.exit.z,width:GROUND.exit.width}];
+for(const c of columnPlan.filter(c=>c.side==='right')){
+ for(const w of rightOpenings)assert.ok(Math.abs(c.z-w.z)>(w.width+STRUCTURE.section)/2,`${c.id} must clear window/door`);
+ assert.ok(c.z+STRUCTURE.section/2<SMALL_SUITE.balcony.front||c.z-STRUCTURE.section/2>SMALL_SUITE.balcony.back,`${c.id} clears recessed balcony`);
+}
+console.log('10 concept column lines: paired axes and opening clearances pass');
+
+const pointSegmentDistance=(p,a,b)=>{
+ const dx=b[0]-a[0],dz=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*dx+(p[1]-a[1])*dz)/(dx*dx+dz*dz)));
+ return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dz);
+};
+for(const c of columnPlan.filter(c=>c.z>E.front&&c.z<E.back)){
+ const side=shellSides[c.side==='left'?0:1];
+ assert.ok(Math.min(...side.slice(1).map((b,i)=>pointSegmentDistance([c.x,c.z],side[i],b)))<1e-8,`${c.id}: penthouse wall follows column axis`);
+}
+assert.ok(shellSides[1].length>2,'Penthouse follows the change in facade slope');
+assert.equal(shellOutline.length,shellSides[0].length+shellSides[1].length);
+const sampleRail=[[2,1.1,0],[1,1.6,0],[.5,1.6,0]];
+assert.ok(Math.abs(railHeightAt(sampleRail,1.75,0)-1.225)<1e-9,'Picket height interpolates slope');
+assert.equal(railHeightAt(sampleRail,.75,0),1.6,'Landing picket joins horizontal rail');
+console.log('PASS: penthouse wall/column alignment, facade bend and sloping picket joins.');

@@ -20,7 +20,7 @@ export function createHouseLighting({house,floors,scene}){
  const poolMaterial=new T.MeshBasicMaterial({map:gradientTexture(),transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending,side:T.DoubleSide});
  const washMaterial=new T.MeshBasicMaterial({map:gradientTexture(true),transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending,side:T.DoubleSide});
  const roots=floors.map((floor,i)=>{const g=new T.Group();g.name=`He_den_tang_${i+1}`;g.position.x=MIRROR_X;g.scale.x=-1;floor.add(g);return g});
- const fixtures=[],pools=[],wallWashes=[],ceilingBatches=[];
+ const fixtures=[],pools=[],wallWashes=[],ceilingBatches=[],wallBatches=[];
  function mesh(parent,geometry,material,x=0,y=0,z=0){const m=new T.Mesh(geometry,material);m.position.set(x,y,z);parent.add(m);return m}
  function box(p,x,y,z,w,h,d,m){return mesh(p,new T.BoxGeometry(w,h,d),m,x,y,z)}
  function wash(g,height,up=true){const m=mesh(g,new T.PlaneGeometry(.9,height),washMaterial,0,(up?1:-1)*(.19+height/2),.006);if(!up)m.rotation.z=Math.PI;m.renderOrder=1;wallWashes.push(m);}
@@ -63,11 +63,11 @@ export function createHouseLighting({house,floors,scene}){
  // Batch static housings and luminous surfaces per floor; keep the fixture plan as metadata.
  for(const root of roots){
   const buckets=new Map();root.updateMatrixWorld(true);const inverse=root.matrixWorld.clone().invert();
-  root.traverse(o=>{if(!o.isMesh||![dark,white,glow].includes(o.material))return;let owner=o.parent;while(owner!==root&&!owner.userData.kind)owner=owner.parent;const ceiling=['ceiling','pendant'].includes(owner.userData.kind);o.userData.ceilingFixture=ceiling;const key=o.material.uuid+ceiling;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(o)});
+  root.traverse(o=>{if(!o.isMesh||![dark,white,glow].includes(o.material))return;let owner=o.parent;while(owner!==root&&!owner.userData.kind)owner=owner.parent;const wall=owner.userData.kind==='wall'||(owner.userData.kind==='step'&&owner.userData.y>.72);o.userData.wallFixture=wall;const ceiling=['ceiling','pendant'].includes(owner.userData.kind);o.userData.ceilingFixture=ceiling;const key=o.material.uuid+ceiling+wall;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(o)});
   for(const list of buckets.values()){
    const geometries=list.map(o=>{let geo=o.geometry.clone();if(geo.index){const old=geo;geo=geo.toNonIndexed();old.dispose()}geo.applyMatrix4(inverse.clone().multiply(o.matrixWorld));return geo});
    const merged=mergeGeometries(geometries,false);geometries.forEach(g=>g.dispose());
-   const batch=new T.Mesh(merged,list[0].material);batch.name='Den_gop_hinh_hoc_tinh';batch.castShadow=false;if(list[0].userData.ceilingFixture){const ghost=batch.material.clone();ghost.transparent=true;ghost.opacity=.12;ghost.depthWrite=false;ceilingBatches.push({mesh:batch,solid:batch.material,ghost});}root.add(batch);for(const o of list)o.removeFromParent();
+   const batch=new T.Mesh(merged,list[0].material);batch.name='Den_gop_hinh_hoc_tinh';batch.castShadow=false;if(list[0].userData.wallFixture)wallBatches.push(batch);if(list[0].userData.ceilingFixture){const ghost=batch.material.clone();ghost.transparent=true;ghost.opacity=.12;ghost.depthWrite=false;ceilingBatches.push({mesh:batch,solid:batch.material,ghost});}root.add(batch);for(const o of list)o.removeFromParent();
   }
  }
  // Fixed light budget: no extra shadow-map renders and no shader recompilation on toggles.
@@ -78,5 +78,5 @@ export function createHouseLighting({house,floors,scene}){
   slots.forEach((light,i)=>{const s=active[i];if(!s){light.intensity=0;return}const offset=s.kind==='wall'?.22:0;light.position.set(MIRROR_X-s.x-Math.sin(s.rotation||0)*offset,HEIGHT*s.floor+s.y-(s.kind==='ceiling'?.25:0),s.z+Math.cos(s.rotation||0)*offset);light.color.set(s.kelvin>=3500?'#ffe5c5':'#ffd5a0');light.intensity=nightMix*(s.power??(s.kind==='wall'?22:62));light.distance=s.range??(s.kind==='wall'?4.1:5.1);});
   glow.emissiveIntensity=.05+nightMix*1.8;washMaterial.opacity=nightMix*.72;poolMaterial.opacity=nightMix*.36;
  }
- return {plan:LIGHTING_PLAN,fixtures,slots,setView(mode,lowWalls=false){view=mode;ceilingBatches.forEach(b=>b.mesh.material=mode==='all'?b.solid:b.ghost);wallWashes.forEach(m=>m.visible=!lowWalls);update()},setMix(value){nightMix=value;update()},stats:()=>({fixtures:fixtures.length,view,nightMix,activeLights:slots.filter(l=>l.intensity>0).length,lightBudget:slots.length,address:'356/73 Hoàng Diệu'})};
+ return {plan:LIGHTING_PLAN,fixtures,slots,setView(mode,lowWalls=false){view=mode;fixtures.forEach(f=>{if(f.userData.kind==='wall'||(f.userData.kind==='step'&&f.userData.y>.72))f.visible=!lowWalls;});wallBatches.forEach(b=>b.visible=!lowWalls);ceilingBatches.forEach(b=>b.mesh.material=mode==='all'?b.solid:b.ghost);wallWashes.forEach(m=>m.visible=!lowWalls);update()},setMix(value){nightMix=value;update()},stats:()=>({fixtures:fixtures.length,view,nightMix,activeLights:slots.filter(l=>l.intensity>0).length,lightBudget:slots.length,address:'356/73 Hoàng Diệu'})};
 }
