@@ -1,3 +1,4 @@
+import {WINDER,fanPoint,fanAngle,fanHeight,fanStepPolygon,fanEntryDirection} from './stair-entry.js';
 import {railHeightAt} from './building-joints.js';
 import {buildColumns} from './structure-plan.js';
 import {SITE} from './site-plan.js';
@@ -70,21 +71,32 @@ function windowOn(p,a,b,bottom=.85,top=2.65,mullion=true,{security=bottom>0,curt
  g.userData={security,curtains,width:len,bottom,top};return g;
 }
 export const entranceDoor={panels:[],open:false,progress:0,width:0};
-function facade(p,z,left=.45,right=5.25){if(p.userData.floor===0)[left,right]=entrySpan(z);wall(p,[left,z],[right,z],HEIGHT-UPPER.slabThickness,.16,[{start:.35,end:right-left-.35,bottom:0,top:2.7}],true);const glazing=windowOn(p,[left+.35,z],[right-.35,z],0,2.7);if(p.userData.floor===0){glazing.name='Cua_kinh_truot_vao_phong_khach';glassParts.find(part=>part.obj===glazing).hideCut=true;box(glazing,1.05,0,0,.04,2.7,.075,M.dark);box(glazing,.97,.95,-.055,.025,.28,.025,M.dark)}}
+function facade(p,z,left=.45,right=5.25){
+ if(p.userData.floor===0)[left,right]=entrySpan(z);
+ wall(p,[left,z],[right,z],HEIGHT-UPPER.slabThickness,.16,[{start:.35,end:right-left-.35,bottom:0,top:2.7}],true);
+ if(p.userData.floor!==0){windowOn(p,[left+.35,z],[right-.35,z],0,2.7);return}
+ const start=left+.35,end=right-.35,middle=(start+end)/2;
+ const entry=group(p);entry.name='Cua_chinh_trai_kinh_co_dinh_phai';entry.userData={floor:0,leftDoor:[start,middle],rightFixed:[middle,end],viewFrom:'outside-looking-in'};
+ const sliding=windowOn(entry,[start,z-.022],[middle,z-.022],0,2.7,false,{security:false});sliding.name='Nua_trai_cua_kinh_truot';
+ const fixed=windowOn(entry,[middle,z+.022],[end,z+.022],0,2.7,false,{security:false});fixed.name='Nua_phai_kinh_co_dinh';
+ box(sliding,middle-start-.12,1.02,-.055,.025,.32,.025,M.dark);
+ box(entry,middle,2.72,z,end-start+.07,.035,.11,M.dark);
+}
+
 
 export function setEntranceProgress(progress){entranceDoor.progress=Math.max(0,Math.min(1,progress));for(const panel of entranceDoor.panels)panel.object.position.x=panel.closedX+panel.travel*entranceDoor.progress}
 function railing(p,a,b,h=1.05){const len=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.ceil(len/.13);for(let i=0;i<=n;i++){const t=i/n;rod(p,[a[0]+(b[0]-a[0])*t,0,a[1]+(b[1]-a[1])*t],[a[0]+(b[0]-a[0])*t,h,a[1]+(b[1]-a[1])*t],.012,M.dark)}rod(p,[a[0],h,a[1]],[b[0],h,b[1]],.024,M.dark)}
 export function plant(p,x,z,height=.95){const g=group(p,x,z);cyl(g,0,0,0,height*.16,height*.3,M.stone,height*.2);cyl(g,0,height*.3,0,height*.165,.02,M.soil);for(let i=0;i<9;i++){const a=i*2.3999,len=height*(.4+(i%3)*.12),bx=Math.cos(a)*height*.24,bz=Math.sin(a)*height*.24;rod(g,[0,height*.3,0],[bx,len,bz],.009,M.leaf);const leaf=new T.Mesh(new T.SphereGeometry(1,12,8),i%2?M.leaf:M.leaf2);leaf.scale.set(height*.1,height*.26,height*.035);leaf.position.set(bx,len+.07,bz);leaf.rotation.set(Math.sin(a)*.5,a,Math.cos(a)*.65);leaf.castShadow=true;g.add(leaf)}return g}
 function rug(p,x,z,w,d){box(p,x,.007,z,w,.012,d,M.linen,.03);for(let i=0;i<5;i++){box(p,x-w/2+.05+i*.025,.02,z,.008,.003,d-.12,M.oak)}return null}
-function livingRoom(p){const mirrored=group(p);mirrored.name='Phong_khach_sofa_trai_TV_phai';mirrored.position.x=LIVING_MIRROR_AXIS;mirrored.scale.x=-1;p=mirrored;
+function livingRoom(p){const living=group(p);living.name='Phong_khach_sofa_phai_TV_trai';p=living;
  const carpet=group(p,LIVING.rug.x,LIVING.rug.z);carpet.name='Tham_2950x2700';
  const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d');ctx.fillStyle='#cec8bb';ctx.fillRect(0,0,256,256);
  for(let i=0;i<256;i+=2){ctx.strokeStyle=i%4?'#d8d3c7':'#bfb9ab';ctx.globalAlpha=.32;ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,256);ctx.stroke();ctx.globalAlpha=.16;ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(256,i);ctx.stroke()}ctx.globalAlpha=1;
  const weave=new T.CanvasTexture(c);weave.wrapS=weave.wrapT=T.RepeatWrapping;weave.repeat.set(5,5);weave.colorSpace=T.SRGBColorSpace;weave.anisotropy=8;
  const fabric=mat('#c9c4b8',1,{map:weave});box(carpet,0,.008,0,LIVING.rug.width,.014,LIVING.rug.length,fabric,.04);
  // Low, handle-free credenza on the left party wall; no freestanding TV pedestal.
- const wallSlope=(entrySpan(GROUND.tv.z+.1)[1]-entrySpan(GROUND.tv.z-.1)[1])/.2;
- const tv=group(p,LIVING_MIRROR_AXIS-(entrySpan(GROUND.tv.z)[1]-.09-.225),GROUND.tv.z,-Math.atan(wallSlope));tv.name='TV_ben_phai';tv.userData={wallGap:.01,wallAligned:true};
+ const wallSlope=(entrySpan(GROUND.tv.z+.1)[0]-entrySpan(GROUND.tv.z-.1)[0])/.2;
+ const tv=group(p,entrySpan(GROUND.tv.z)[0]+.09+.225,GROUND.tv.z,-Math.atan(wallSlope));tv.name='TV_ben_trai';tv.userData={wallGap:.01,wallAligned:true};
  box(tv,-.14,.05,0,.12,2.3,2.4,mat('#dedbd2'),.025);
  box(tv,0,.16,0,.43,.31,2.2,M.oak,.035);box(tv,.015,.47,0,.46,.025,2.24,mat('#d6c8b6'),.01);
  for(let i=0;i<4;i++){box(tv,.223,.185,-.825+i*.55,.012,.26,.538,M.linen,.008)}
@@ -119,7 +131,7 @@ function waterDispenser(p,x,z,rotation=-Math.PI/2){
  for(let i=0;i<6;i++)box(g,0,.055+i*.009,-.184,.18,.003,.002,M.dark);
 }
 function familyPortrait(p){
- const z=GROUND.sofa.z,wallX=LIVING_MIRROR_AXIS-entrySpan(z)[0]-.09-.025;
+ const z=GROUND.sofa.z,wallX=entrySpan(z)[1]-.09-.025;
  const g=group(p,wallX,z,Math.PI/2);g.name='Anh_gia_dinh_sau_sofa';g.userData={placeholder:true,width:1.4,height:.88,bottom:1.4};
  box(g,0,1.4,0,1.4,.88,.045,M.oak,.008);box(g,0,1.425,-.026,1.35,.83,.009,M.linen);
  // Neutral family-portrait placeholder; replace with the owner's actual photo later.
@@ -137,17 +149,39 @@ function familyPortrait(p){
  glassParts.push({obj:g,floor:0,hideCut:true});
 }
 function lStair(p,{arrivalRail=true,frontGuard=false}={}){
- const {x,z,width,landing,firstRisers,middleRisers,lastRisers,rise,tread}=STAIR;
+ const {x,z,width,landing,firstRisers,middleRisers,lastRisers,rise,tread,middleTread}=STAIR;
  const g=group(p);g.name='Cau_thang_chu_L';
  const firstY=firstRisers*rise,turnZ=z+width,entryX=x+landing+(firstRisers-1)*tread,rearZ=UPPER.landingStart,rearY=(firstRisers+middleRisers)*rise;
  const material=mat('#d4c6b2',.72),metal=mat('#454945',.55,{metalness:.35});
  function cap(name,cx,cz,y,w,d){const t=group(g);t.name=name;box(t,cx,y-.065,cz,w,.065,d,material,.009)}
  function platform(name,cx,cz,y,w,d){const t=group(g);t.name=name;box(t,cx,y-.18,cz,w,.115,d,M.plaster);cap(name+'_mat',cx,cz,y,w,d)}
  function handrail(points){for(let i=1;i<points.length;i++)rod(g,points[i-1],points[i],.022,M.oak)}
+ if(frontGuard){
+  const curved=group(g);curved.name='Bac_xoe_quat_loi_len_cheo';curved.userData={...WINDER,entryDirection:fanEntryDirection};
+  for(let i=0;i<WINDER.risers;i++){
+   const polygon=fanStepPolygon(i),y=(i+1)*rise;
+   const body=shapeSlab(curved,polygon,y-.065,y-.065,M.oak);body.name='Than_bac_quat_'+(i+1);
+   const top=shapeSlab(curved,polygon,y,.065,material);top.name='Mat_bac_quat_'+(i+1);
+   if(i>1){const angle=fanAngle((i+.5)/WINDER.risers),[xx,zz]=fanPoint(WINDER.innerRadius+width+.012,angle),panel=group(curved,xx,zz,Math.PI/2-angle);
+    box(panel,0,.08,0,.23,y-.18,.02,M.linen,.008);box(panel,.07,.15,0,.012,.075,.045,M.dark,.004)}
+  }
+  for(const [radius,name] of [[WINDER.innerRadius+.02,'Lan_can_cung_trong'],[WINDER.innerRadius+width-.02,'Lan_can_cung_ngoai']]){
+   const guard=group(g);guard.name=name;const rail=[];
+   for(let i=0;i<=64;i++){const t=i/64,[xx,zz]=fanPoint(radius,fanAngle(t));rail.push([xx,fanHeight(t)+.95,zz])}
+   for(let i=1;i<rail.length;i++)rod(guard,rail[i-1],rail[i],.022,M.oak);
+   const posts=[];
+   for(let i=0;i<WINDER.risers;i++)for(const q of [.2,.6]){
+    const t=(i+q)/WINDER.risers,[xx,zz]=fanPoint(radius,fanAngle(t)),y=(i+1)*rise,top=railHeightAt(rail,xx,zz);
+    rod(guard,[xx,y,zz],[xx,top,zz],.012,metal);posts.push({x:xx,z:zz,y,top})
+   }
+   const end=rail.at(-1);rod(guard,[end[0],firstY,end[2]],end,.012,metal);
+   guard.userData={rail,posts,curved:true,openEntry:true};
+  }
+ }else{
  for(let i=0;i<firstRisers-1;i++){const cx=entryX-(i+.5)*tread,y=(i+1)*rise;box(g,cx,0,z+width/2,tread,y-.065,width,M.oak);cap('Bac_dau_'+(i+1),cx,z+width/2,y,tread,width);}
  box(g,x+landing/2,0,z+width/2,landing,firstY-.065,width,M.oak);cap('Chieu_nghi_dau',x+landing/2,z+width/2,firstY,landing,width);
  // One inner-side guard joins the long flight without doubling back over the landing.
- const startGuard=group(g);startGuard.name='Lan_can_bon_bac_dau';startGuard.userData={side:'inner',sides:1};
+ const startGuard=group(g);startGuard.name='Lan_can_bac_dau';startGuard.userData={side:'inner',sides:1};
  const edgeZ=z+width-.025,rail=[[entryX-.015,rise+.95,edgeZ]],initialPosts=[];
  for(let i=0;i<firstRisers;i++){
   const cx=i<firstRisers-1?entryX-(i+.5)*tread:x+width-.02,y=(i+1)*rise;
@@ -159,49 +193,38 @@ function lStair(p,{arrivalRail=true,frontGuard=false}={}){
  for(const post of initialPosts)rod(startGuard,[post.x,post.y,post.z],[post.x,railHeightAt(rail,post.x,post.z),post.z],.012,metal);
  startGuard.userData.rail=rail;startGuard.userData.posts=initialPosts.map(post=>({...post,top:railHeightAt(rail,post.x,post.z)}));
  for(let i=1;i<rail.length;i++)rod(startGuard,rail[i-1],rail[i],.022,M.oak);
- // Ground floor only: outside edge faces the main entrance. No return across circulation.
- if(frontGuard){
-  const guard=group(g);guard.name='Lan_can_mat_huong_cua_tang_1';
-  const frontZ=z+.035,points=[[entryX-.015,rise+.95,frontZ]],frontPosts=[];
-  for(let i=0;i<firstRisers-1;i++){
-   const cx=entryX-(i+.5)*tread,y=(i+1)*rise;
-   for(const dx of [-.065,.065])frontPosts.push({x:cx+dx,y,z:frontZ});
-   points.push([cx,y+.95,frontZ]);
-  }
-  const endX=entrySpan(frontZ)[0]+.07,landingX=x+landing-.04;
-  points.push([landingX,firstY+.95,frontZ],[endX,firstY+.95,frontZ]);
-  const count=Math.ceil((landingX-endX)/.13);
-  for(let i=0;i<=count;i++){const px=landingX+(endX-landingX)*i/count;rod(guard,[px,firstY,frontZ],[px,firstY+.95,frontZ],.012,metal)}
-  for(const post of frontPosts)rod(guard,[post.x,post.y,post.z],[post.x,railHeightAt(points,post.x,post.z),post.z],.012,metal);
-  for(let i=1;i<points.length;i++)rod(guard,points[i-1],points[i],.022,M.oak);
-  guard.userData={floor:0,edge:'front',postHeight:.95,openEntry:true,points,posts:frontPosts.map(post=>({...post,top:railHeightAt(points,post.x,post.z)}))};
+ const storage=group(g);storage.name='Tu_duoi_bac_dau';for(const xx of[x+.24,x+.71]){box(storage,xx,.07,z-.014,.445,.46,.025,M.linen,.012);box(storage,xx+.15,.32,z-.033,.018,.11,.018,M.dark)}
  }
- const storage=group(g);storage.name='Tu_duoi_bon_bac_dau';for(const xx of[x+.24,x+.71]){box(storage,xx,.07,z-.014,.445,.46,.025,M.linen,.012);box(storage,xx+.15,.32,z-.033,.018,.11,.018,M.dark)}
  // Continuous stepped concrete profile: no overlapping face plates or floating risers.
  const count=middleRisers-1,firstTop=(firstRisers+1)*rise,lastTop=(firstRisers+count)*rise;
  const profile=[[turnZ,firstTop-.185],[rearZ,lastTop-.185]];
- for(let i=count-1;i>=0;i--){const y=(firstRisers+i+1)*rise-.065;profile.push([turnZ+(i+1)*tread,y],[turnZ+i*tread,y])}
+ for(let i=count-1;i>=0;i--){const y=(firstRisers+i+1)*rise-.065;profile.push([turnZ+(i+1)*middleTread,y],[turnZ+i*middleTread,y])}
  const shape=new T.Shape(profile.map(([zz,y])=>new T.Vector2(zz,y))),geometry=new T.ExtrudeGeometry(shape,{depth:width,bevelEnabled:false,steps:1});geometry.rotateY(-Math.PI/2);
  const body=new T.Mesh(geometry,M.plaster);body.position.x=x+width;body.castShadow=body.receiveShadow=true;body.name='Than_ve_thang_lien_khoi';g.add(body);
  const middleRail=[[x+width-.02,firstY+.95,turnZ]];
- for(let i=0;i<count;i++){const cz=turnZ+(i+.5)*tread,y=(firstRisers+i+1)*rise;cap('Bac_doc_'+(firstRisers+i+1),x+width/2,cz,y,width,tread);rod(g,[x+width-.02,y,cz],[x+width-.02,y+.95,cz],.012,metal);middleRail.push([x+width-.02,y+.95,cz])}
+ for(let i=0;i<count;i++){const cz=turnZ+(i+.5)*middleTread,y=(firstRisers+i+1)*rise;cap('Bac_doc_'+(firstRisers+i+1),x+width/2,cz,y,width,middleTread);rod(g,[x+width-.02,y,cz],[x+width-.02,y+.95,cz],.012,metal);middleRail.push([x+width-.02,y+.95,cz])}
  middleRail.push([x+width-.02,rearY+.95,rearZ]);handrail(middleRail);
  platform('Chieu_nghi_quay_phai',x+width/2,rearZ+landing/2,rearY,width,landing);
- // Final three treads and the twentieth rise turn right, towards the room.
+ // Final three treads and the final rise turn right, towards the room.
  const finalRail=[[x,rearY+.95,rearZ+landing-.02],[x+width,rearY+.95,rearZ+landing-.02]];
  for(let i=0;i<lastRisers-1;i++){const cx=x+width+(i+.5)*tread,y=(firstRisers+middleRisers+i+1)*rise;box(g,cx,rearY-.18,rearZ+landing/2,tread,y-.065-(rearY-.18),landing,M.plaster);cap('Bac_re_phai_'+(i+1),cx,rearZ+landing/2,y,tread,landing);if(arrivalRail)rod(g,[cx,y,rearZ+landing-.02],[cx,y+.95,rearZ+landing-.02],.012,metal);finalRail.push([cx,y+.95,rearZ+landing-.02])}
  finalRail.push([UPPER.landingX,HEIGHT+UPPER.guardHeight,rearZ+landing-.02]);if(arrivalRail)handrail(finalRail);
  platform('Chieu_toi_re_phai',UPPER.landingX+landing/2,rearZ+landing/2,HEIGHT,landing,landing);
- g.userData={initialGuard:true,firstRisers,middleRisers,lastRisers,risers:STAIR.risers,width,entry:[entryX,0,z+width/2],turn:[x+width/2,rearY,rearZ+landing/2],exit:[UPPER.landingX+landing/2,HEIGHT,rearZ+landing/2],rightTurn:true};
+ const [fanEntryX,fanEntryZ]=fanPoint(WINDER.innerRadius+width/2,fanAngle(0));
+ g.userData={initialGuard:true,firstRisers,middleRisers,lastRisers,risers:STAIR.risers,width,entry:frontGuard?[fanEntryX,0,fanEntryZ]:[entryX,0,z+width/2],entryDirection:frontGuard?fanEntryDirection:[-1,0],turn:[x+width/2,rearY,rearZ+landing/2],exit:[UPPER.landingX+landing/2,HEIGHT,rearZ+landing/2],rightTurn:true};
  return g;
 }
 function serviceRooms(p){
  const {kitchen:k,fridge:f,dining:d,rear:r}=SERVICE;
  const g=group(p);g.userData.floor=0;g.name='Bep_ban_an_va_hai_phong_cuoi';
  // Bespoke joinery follows the underside continuously, with an inset fridge bay.
- const pantry=group(g);pantry.name='Tu_bep_phu_duoi_thang';
+ const pantry=group(g);pantry.name='Tu_bep_phu_duoi_thang';pantry.userData={fitted:true,fridgePosition:[f.x,f.z],stairTransition:UPPER.landingStart};
  function wedge(parent,x0,x1,z0,z1,y0,h0,h1,material){const shape=new T.Shape([new T.Vector2(z0,y0),new T.Vector2(z1,y0),new T.Vector2(z1,h1),new T.Vector2(z0,h0)]);const geo=new T.ExtrudeGeometry(shape,{depth:x1-x0,bevelEnabled:false,steps:1});geo.rotateY(-Math.PI/2);const mesh=new T.Mesh(geo,material);mesh.position.x=x1;mesh.castShadow=mesh.receiveShadow=true;parent.add(mesh)}
- const top=z=>stairUnderside(z)-.025,back=entrySpan(8)[0]+.09+.01,front=1.17,fridgeStart=f.z-f.width/2-.035,fridgeEnd=f.z+f.width/2+.035;
+ const top=z=>stairUnderside(z)-.025,back=entrySpan(8)[0]+.09+.01,front=1.17,fridgeStart=f.z-f.width/2-f.sideClearance,fridgeEnd=f.z+f.width/2+f.sideClearance;
+ function fittedWedge(parent,x0,x1,z0,z1,y0,material,roofInset=0){
+  const cuts=[z0,...(z0<UPPER.landingStart&&z1>UPPER.landingStart?[UPPER.landingStart]:[]),z1];
+  for(let i=1;i<cuts.length;i++){const a=cuts[i-1],b=cuts[i];wedge(parent,x0,x1,a,b,y0,top(a)-roofInset,top(b===UPPER.landingStart?b-1e-7:b)-roofInset,material)}
+ }
  function fittedCabinets(z0,z1){const count=Math.ceil((z1-z0)/.5),span=(z1-z0)/count;
   for(let i=0;i<count;i++){const a=z0+i*span,b=a+span;wedge(pantry,back,front,a,b,.07,top(a),top(b),M.oak);
    wedge(pantry,front,front+.018,a+.009,b-.009,.1,top(a+.009)-.015,top(b-.009)-.015,M.linen);
@@ -212,9 +235,9 @@ function serviceRooms(p){
  // Only a 25 mm end panel after the fridge; no tall cabinet toward the WC.
  const endPanel=group(pantry);endPanel.name='Vach_ket_thuc_tu_lanh';
  wedge(endPanel,back,front,fridgeEnd,REAR_FURNITURE.cabinetEnd,.07,top(fridgeEnd),top(REAR_FURNITURE.cabinetEnd),M.oak);
- wedge(pantry,back,front,fridgeStart,fridgeEnd,f.height+.085,top(fridgeStart),top(fridgeEnd),M.oak);
- wedge(pantry,front,front+.018,fridgeStart+.009,fridgeEnd-.009,f.height+.105,top(fridgeStart+.009)-.015,top(fridgeEnd-.009)-.015,M.linen);
- box(pantry,front+.025,f.height+.12,f.z,.015,.015,.55,M.dark);
+ fittedWedge(pantry,back,front,fridgeStart,fridgeEnd,f.height+f.topClearance,M.oak);
+ fittedWedge(pantry,front,front+.018,fridgeStart+.009,fridgeEnd-.009,f.height+f.topClearance,M.linen);
+ for(const dy of [.018,.036])box(pantry,front+.025,f.height+dy,f.z,.012,.003,f.width-.02,M.dark);
  const kitchen=group(g);kitchen.name='Bep_chu_L_ap_vach_phong_ong_ba';
  const backX=z=>entrySpan(z)[1]-.10,frontX=z=>backX(z)-k.depth,returnFront=k.end-k.returnDepth;
  kitchen.userData={type:'L',sideLength:k.end-k.start,returnLength:frontX(k.end)-k.returnLeft,depth:k.depth,top:k.top,wallGap:.01};
@@ -268,15 +291,15 @@ function serviceRooms(p){
  box(fryer,0,.905,0,.34,.34,.30,M.black,.045);box(fryer,-.175,.95,0,.012,.20,.24,M.dark,.018);box(fryer,-.195,1.02,0,.03,.035,.13,M.oak,.008);box(fryer,-.178,1.19,0,.008,.025,.08,M.sage,.004);
  waterDispenser(g,k.water.x,k.water.z,k.water.rotation);
 
- const fridge=group(g,f.x,f.z);fridge.name='Tu_lanh_hai_canh_912x716';
- box(fridge,0,0,0,f.depth,f.height,f.width,mat('#aeb8b3',.35,{metalness:.45}),.035);
- for(const side of[-1,1]){box(fridge,f.depth/2+.012,.05,side*f.width/4,.025,f.height-.09,f.width/2-.018,mat('#c4cdc7',.32,{metalness:.35}),.02);box(fridge,f.depth/2+.038,.85,side*.045,.025,.43,.024,M.dark,.009)}
- box(fridge,f.depth/2+.03,.005,0,.018,.035,f.width-.06,M.dark);
+ const fridge=group(g,f.x,f.z);fridge.name='Tu_lanh_hai_canh_912x716';fridge.userData={...f,ventilatedBay:true};
+ box(fridge,-.025,0,0,f.depth-.05,f.height,f.width,mat('#aeb8b3',.35,{metalness:.45}),.035);
+ for(const side of[-1,1]){box(fridge,f.depth/2-.025,.05,side*f.width/4,.05,f.height-.09,f.width/2-.018,mat('#c4cdc7',.32,{metalness:.35}),.02);box(fridge,f.depth/2-.004,.85,side*.045,.006,.43,.024,M.dark,.009)}
+ box(fridge,f.depth/2-.01,.005,0,.012,.035,f.width-.06,M.dark);
  // Four seats; length runs front-to-back and keeps the kitchen working aisle separate.
  const eating=group(g,d.x,d.z,d.rotation);eating.name='Ban_an_4_nguoi';
  box(eating,0,.74,0,d.width,.055,d.length,M.oak,.09);
  for(const z of[-.56,.56])box(eating,0,.03,z,.5,.71,.12,M.wood,.035);
- for(const side of[-1,1])for(const z of[-.48,.48]){const chair=group(eating,side*.72,z,side===1?Math.PI/2:-Math.PI/2);box(chair,0,.44,0,.43,.065,.43,M.linen,.045);box(chair,0,.48,.18,.43,.36,.065,M.oak,.04);for(const x of[-.16,.16])for(const zz of[-.16,.16])box(chair,x,.025,zz,.035,.415,.035,M.wood,.008)}
+ for(const side of[-1,1])for(const z of[-.48,.48]){const chair=group(eating,side*.66,z,side===1?Math.PI/2:-Math.PI/2);box(chair,0,.44,0,.43,.065,.43,M.linen,.045);box(chair,0,.48,.18,.43,.36,.065,M.oak,.04);for(const x of[-.16,.16])for(const zz of[-.16,.16])box(chair,x,.025,zz,.035,.415,.035,M.wood,.008)}
  cyl(eating,0,.795,0,.075,.18,M.stone);pendant(g,d.x,d.z);
  // Rear bedroom is on the right. The compact WC is left, with the basin outside.
  const [left,right]=entrySpan(r.start),endSpan=entrySpan(r.end);
@@ -571,9 +594,9 @@ for(let index=0;index<1;index++){
     const base=group(level);base.position.y=GROUND.porchLevel;const length=Math.hypot(end[0]-start[0],end[1]-start[1]);
     rawWall(base,start,end,.3,.19,i===0?[{start:.46,end:.46+GROUND.gateOpening+.12,bottom:0,top:.3}]:[]);
    }
-   const [left,right]=entrySpan(GROUND.glassLine),steps=group(p);steps.name='Hai_bac_150mm';
-   box(steps,(left+right)/2,-.3,GROUND.glassLine-.15,right-left-.65,.15,.3,M.stone);
-   box(steps,(left+right)/2,.001,GROUND.glassLine+.15,right-left-.65,.012,.3,M.stone);
+   const [left,right]=entrySpan(GROUND.glassLine),steps=group(p),stepLeft=left+.35,stepRight=(left+right)/2,stepX=(stepLeft+stepRight)/2,stepWidth=stepRight-stepLeft;steps.name='Hai_bac_150mm';
+   box(steps,stepX,-.3,GROUND.glassLine-.15,stepWidth,.15,.3,M.stone);
+   box(steps,stepX,.001,GROUND.glassLine+.15,stepWidth,.012,.3,M.stone);
    for(const bike of GROUND.parking){
     const holder=group(p,bike.x,bike.z,bike.angle);holder.name='Honda_LEAD_1844x714x1132';holder.position.y=GROUND.porchLevel+.005;
     const model=fitBox(scooter(new T.Group(),0,0,'#a7b5aa'),[bike.width,bike.height,bike.length]);

@@ -1,3 +1,4 @@
+import {fanStepMarker} from './stair-entry.js';
 import {HEIGHT,UPPER,STAIR,entrySpan,THIRD,MASTER_SUITE,SMALL_SUITE,SERVICE} from './design.js';
 
 // Metres above each finished floor. Warm living areas; neutral task/bathroom lighting.
@@ -6,7 +7,7 @@ const add=(floor,zone,kind,x,z,options={})=>LIGHTING_PLAN.push({floor,zone,kind,
 for(const [x,z] of [[1.55,3.15],[3.7,3.15],[1.55,4.7],[3.7,4.7]])add(0,'living','ceiling',x,z,{primary:z===3.15,allPriority:10,power:65,range:5.8});
 add(0,'dining','pendant',SERVICE.dining.x,SERVICE.dining.z,{y:2.128,radius:.175,primary:true});
 for(const z of [6.9,7.8,8.75])add(0,'kitchen','ceiling',4.65,z,{kelvin:3500,primary:z===7.8});
-add(0,'rear-hall','ceiling',1.35,10.55,{radius:.13,primary:true});
+add(0,'rear-hall','ceiling',1.35,10.85,{radius:.13,primary:true});
 for(const z of [10.0,12.2])add(0,'grandparents','ceiling',3.7,z,{radius:.18,primary:z===10.0});
 for(const z of [11.65,12.65])add(0,'bath-grandparents','ceiling',.95,z,{kelvin:3500,primary:z===11.65});
 add(0,'washbasin','mirror',entrySpan(10.55)[0]+.105,10.55,{y:1.92,rotation:Math.PI/2,length:.5,kelvin:3500});
@@ -29,20 +30,21 @@ add(1,'bath-small','ceiling',1.05,12.65,{kelvin:3500});
 add(1,'balcony','wall',MASTER_SUITE.balcony.splitX+.065,.72,{y:2.1,rotation:Math.PI/2,primary:true,priority:9});
 for(const z of [4.95,8.8])add(1,'exterior','wall',entrySpan(z)[1]+.095,z,{y:2.1,rotation:Math.PI/2,primary:true,priority:8,allPriority:13,power:16,range:6.5});
 add(1,'small-balcony','wall',SMALL_SUITE.balcony.innerX+.055,12.6,{y:2.1,rotation:Math.PI/2});
-add(2,'prayer','ceiling',3.85,7.75,{y:3.035,radius:.2,primary:true});
+add(2,'prayer','ceiling',THIRD.prayer.altarX,8.35,{y:3.035,radius:.2,primary:true});
 for(const z of [7.4,9.9])add(2,'roof-hall','ceiling',1.85,z,{y:3.035,radius:.14,primary:z===9.9});
-for(const x of [.72,2.7])add(2,'front-terrace','wall',x,THIRD.enclosure.front-.066,{y:2.23,rotation:Math.PI,primary:true,priority:10,allPriority:8,power:28,range:5.5});
+for(const x of [THIRD.enclosure.frontDoor.left-.15,THIRD.enclosure.frontDoor.left+THIRD.enclosure.frontDoor.width+.15])add(2,'front-terrace','wall',x,THIRD.enclosure.front-.066,{y:2.23,rotation:Math.PI,primary:true,priority:10,allPriority:8,power:28,range:5.5});
 add(2,'rear-yard','wall',2.95,THIRD.enclosure.back+.066,{y:2.23,primary:true,priority:9});
-add(2,'laundry','ceiling',1.065,11.05,{y:2.508,radius:.13,kelvin:3500,primary:true});
+add(2,'laundry','ceiling',1.065,THIRD.laundry.machines[0].z,{y:2.508,radius:.13,kelvin:3500,primary:true});
 add(2,'handwash-drying','wall',4.65,13.07,{y:.88,rotation:Math.PI,washUp:.12,primary:true,priority:5});
 for(const [x,z] of [[.45,1.2],[.45,4.9],[4.75,1.2],[4.75,4.9]])add(2,'terrace-path','bollard',x,z,{y:.7,primary:(x<1&&z<2)||(x>4&&z>4),allPriority:10,power:22,range:4.8});
 // Recessed step markers follow tread height instead of a flat row on the wall.
 for(const floor of [0,1]){
  for(const i of [1,4,7,10]){
-  const z=STAIR.z+STAIR.width+(i+.5)*STAIR.tread;
+  const z=STAIR.z+STAIR.width+(i+.5)*STAIR.middleTread;
   add(floor,'stairs','step',entrySpan(z)[0]+.095,z,{y:(STAIR.firstRisers+i+1)*STAIR.rise+.16,rotation:Math.PI/2});
  }
- add(floor,'stairs','step',1.25,STAIR.z-.014,{y:.27,rotation:Math.PI});
+ if(floor===0)add(floor,'stairs','step',fanStepMarker.x,fanStepMarker.z,fanStepMarker);
+ else add(floor,'stairs','step',1.25,STAIR.z-.014,{y:.27,rotation:Math.PI});
  add(floor,'stairs','wall',entrySpan(6.65)[0]+.095,6.65,{y:1.8,rotation:Math.PI/2,primary:true});
 }
 export const REQUIRED_LIT_ZONES=[

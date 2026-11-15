@@ -1,6 +1,7 @@
+import {createPrayerDoors} from './prayer-doors.js';
 import {shellSides,shellOutline,shellRightAt,prayerInteriorOutline} from './building-joints.js';
 import {createTerraceCanopy} from './terrace-canopy.js';
-export let terraceCanopy;
+export let terraceCanopy,prayerDoors;
 import {addRoofUtilities} from './exterior-upgrades.js';
 import {trailingPlanters} from './trailing-garden.js';
 import * as T from 'three';
@@ -29,7 +30,7 @@ export function buildThirdFloor(H){
   }
  }
  const guard=group(p);guard.name='Tuong_chan_o_thang_tang_3';
- rawWall(guard,[UPPER.hole.right+.05,UPPER.hole.start],[UPPER.hole.right+.05,UPPER.landingStart-.05],1.05,.1);
+ rawWall(guard,[UPPER.hole.right+.05,THIRD.prayer.back],[UPPER.hole.right+.05,UPPER.landingStart-.05],1.05,.1);
  rawWall(guard,[UPPER.hole.right,UPPER.landingStart-.05],[UPPER.landingX,UPPER.landingStart-.05],1.05,.1);
  rawWall(guard,[UPPER.hole.left,UPPER.hole.end+.05],[UPPER.landingX,UPPER.hole.end+.05],1.05,.1);
  // One weather enclosure contains the stairwell, its landing and the worship room.
@@ -38,8 +39,7 @@ export function buildThirdFloor(H){
  for(const side of shellSides)for(let i=1;i<side.length;i++)wall(shell,side[i-1],side[i],E.height,.18,[],true);
  const frontDoor=E.frontDoor,rearDoor=E.rearDoor;
  wall(shell,[leftFront,E.front],[shellRightAt(E.front),E.front],E.height,.12,[
-  {start:frontDoor.left-leftFront,end:frontDoor.left+frontDoor.width-leftFront,bottom:0,top:2.3},
-  {start:3.2-leftFront,end:4.6-leftFront,bottom:.7,top:2.4}
+  {start:frontDoor.left-leftFront,end:frontDoor.left+frontDoor.width-leftFront,bottom:0,top:frontDoor.height}
  ],true);
  wall(shell,[leftBack,E.back],[shellRightAt(E.back),E.back],E.height,.12,[{start:rearDoor.left-leftBack,end:rearDoor.left+rearDoor.width-leftBack,bottom:0,top:2.3}],true);
  function exteriorDoor(left,z,width,name){
@@ -51,26 +51,42 @@ export function buildThirdFloor(H){
   glassParts.push({obj:g,floor:2,hideCut:true});
   box(shell,left+width/2,0,z,width+.12,.04,.22,M.stone);
  }
- exteriorDoor(frontDoor.left,E.front,frontDoor.width,'Cua_kin_ra_san_truoc');
+ prayerDoors=createPrayerDoors({parent:shell,spec:frontDoor,z:E.front,group,box,rod,M,glassParts});
  exteriorDoor(rearDoor.left,E.back,rearDoor.width,'Cua_kin_ra_san_sau');
- windowOn(shell,[3.2,E.front],[4.6,E.front],.7,2.4);
- // Keep the prayer area private, with an internal door from the covered hall.
- const R=THIRD.prayer,prayer=group(p);prayer.name='Phong_tho_quay_ra_truoc';prayer.userData.floor=2;
- wall(prayer,[R.left,R.front],[R.left,R.back],R.height,.12,[{start:R.sideDoorStart-R.front,end:R.sideDoorStart+R.sideDoorWidth-R.front,bottom:0,top:2.28}]);
- bedroomSlidingDoor(prayer,R.left,R.sideDoorStart+R.sideDoorWidth/2,R.sideDoorWidth,'Cua_phong_tho_tu_sanh',Math.PI/2);
- wall(prayer,[R.left,R.back],[shellRightAt(R.back),R.back],R.height,.12);
+
+ // One rectangular timber zone; a continuous side screen conceals both altar undersides.
+ const R=THIRD.prayer,prayer=group(p);prayer.name='Phong_tho_mo_hai_ban_tho';prayer.userData.floor=2;
+ const screen=wall(prayer,[R.screen.x,R.screen.z1],[R.screen.x,R.screen.z2],R.screen.height,.12);screen.name='Vach_ngan_che_ban_tho';screen.userData={coversBothAltars:true,...R.screen};
+ const cable=box(prayer,R.screen.x-.0775,.06,(R.screen.z1+R.back)/2,.035,.07,R.back-R.screen.z1-.1,M.linen);cable.name='Hop_ky_thuat_giau_day_ban_tho';
+ const leftScreen=wall(prayer,[R.left,R.front],[R.left,R.back],R.screen.height,.12);leftScreen.name='Vach_trai_phong_tho_noi_lien_tuong_o_thang';
+ const rearScreen=wall(prayer,[R.rearWallLeft,R.back],[R.rearWallRight,R.back],R.height,.12);rearScreen.name='Vach_sau_ban_tho_chua_loi_tu_chieu_toi';
+ prayer.userData.arrivalRoute={side:'right',width:Math.min(shellRightAt(R.back),shellRightAt(R.front))-.09-(R.screen.x+.06),rearHallDepth:E.back-.06-(R.back+.06)};
  shapeSlab(prayer,prayerInteriorOutline,.012,.012,M.wood);
- const altar=group(prayer,R.altarX,R.altarZ);altar.name='Ban_tho_gia_tien_huong_truoc';altar.userData.facing='front';
+ const altar=group(prayer,R.altarX,R.altarZ);altar.name='Ban_tho_gia_tien_phia_sau';altar.userData={facing:'front',...R.ancestor};
  const timber=mat('#75523b',.7);
  for(const x of[-.63,.63])for(const z of[-.21,.21])box(altar,x,.04,z,.085,.92,.085,timber,.01);
- box(altar,0,.77,0,1.4,.22,.5,timber,.02);box(altar,0,.99,0,1.55,.07,.6,timber,.025);box(altar,0,1.06,.15,1.35,.09,.25,timber,.012);
+ box(altar,0,.83,0,1.4,.16,.5,timber,.02);box(altar,0,.99,0,1.55,.07,.6,timber,.025);box(altar,0,1.06,.15,1.35,.09,.25,timber,.012);
  for(const x of[-.53,.53]){cyl(altar,x,1.06,-.01,.075,.24,M.brass,.045);cyl(altar,x,1.3,-.01,.04,.045,M.white)}
  cyl(altar,0,1.06,-.14,.095,.11,M.brass,.115);for(const x of[-.025,0,.025])rod(altar,[x,1.15,-.14],[x,1.4,-.14],.0025,timber);
  for(const x of[-.2,0,.2])cyl(altar,x,1.065,-.25,.027,.035,M.white);
+ // Matched, restrained timber apron: recessed panels instead of a solid bulky skirt.
+ for(const xx of[-.43,0,.43])box(altar,xx,.86,-.255,.36,.085,.012,M.wood,.005);
+ altar.scale.set(R.ancestor.width/1.55,R.ancestor.height/1.06,R.ancestor.depth/.6);
  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=192;const ctx=canvas.getContext('2d');ctx.fillStyle='#75523b';ctx.fillRect(0,0,512,192);ctx.strokeStyle='#d8bb73';ctx.lineWidth=6;ctx.strokeRect(12,12,488,168);ctx.fillStyle='#e6ce8d';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 62px serif';ctx.fillText('GIA TIÊN',256,98);
  const tex=new T.CanvasTexture(canvas);tex.colorSpace=T.SRGBColorSpace;const plaque=new T.Mesh(new T.PlaneGeometry(1.12,.42),new T.MeshStandardMaterial({map:tex,roughness:.8}));plaque.rotation.y=Math.PI;plaque.scale.x=-1;plaque.position.set(R.altarX,2.06,R.back-.067);prayer.add(plaque);
- rug(prayer,R.altarX,7.55,1.95,1.2);
- for(const x of[R.altarX-.36,R.altarX+.36])box(prayer,x,.035,7.65,.52,.07,.62,M.linen,.04);
+ const buddhist=group(prayer,R.altarX,R.buddhaZ);buddhist.name='Ban_tho_Phat_phia_truoc';buddhist.userData={facing:'front',...R.buddhist};
+ for(const xx of [-.55,.55])for(const zz of [-.2,.2])box(buddhist,xx,.035,zz,.075,1.18,.075,timber,.008);
+ box(buddhist,0,1.06,0,1.25,.14,.45,timber,.015);box(buddhist,0,1.2,0,1.42,.08,.57,timber,.02);
+ const gold=mat('#b69b61',.42),figure=group(buddhist);figure.name='Tuong_Phat_minh_hoa';
+ cyl(figure,0,1.28,.04,.19,.055,gold,.17);
+ for(const [xx,yy,zz,sx,sy,sz] of [[0,1.39,.04,.2,.075,.12],[0,1.57,.06,.12,.18,.085],[0,1.79,.045,.075,.09,.075],[0,1.88,.05,.033,.035,.033]]){
+  const part=new T.Mesh(new T.SphereGeometry(1,28,20),gold);part.position.set(xx,yy,zz);part.scale.set(sx,sy,sz);part.castShadow=true;figure.add(part);
+ }
+ for(const xx of [-.46,.46]){cyl(buddhist,xx,1.28,-.04,.05,.17,M.brass,.032);cyl(buddhist,xx,1.45,-.04,.025,.04,M.white)}
+ cyl(buddhist,0,1.28,-.19,.065,.07,M.brass,.08);
+ for(const xx of[-.36,0,.36])box(buddhist,xx,1.085,-.23,.30,.075,.012,M.wood,.005);
+ buddhist.scale.set(R.buddhist.width/1.42,R.buddhist.height/1.28,R.buddhist.depth/.57);
+ rug(prayer,R.altarX,7.0,1.65,.8);
  const roof=group(p);roof.name='Mai_kin_chung_cau_thang_phong_tho';roof.userData={floor:2,coversStairOpening:true,slope:E.roofSlope};
  const roofOutline=shellOutline.map(([x,z])=>[x+(x<2.7?-.12:.12),z===E.front?z-.2:z===E.back?z+.12:z]);
  // Continuous perimeter ring visually ties wall heads to the existing column axes.
@@ -97,7 +113,7 @@ export function buildThirdFloor(H){
  }
  // Green terrace: keep the centre open and soften the front parapet with trailing plants.
  const garden=group(p);garden.name='San_thuong_truoc_vuon_cay';
- for(const [x,z,h] of [[.65,1,.95],[4.65,1.1,1.3],[4.75,5.45,1.15],[.6,4.9,1.05],[4.4,4.1,.8]])plant(garden,x,z,h);
+ for(const [x,z,h] of [[.65,1,.95],[4.65,1.1,1.3],[4.85,4.85,1.15],[.6,4.9,1.05],[4.4,4.1,.8]])plant(garden,x,z,h);
  const greenSegments=[];
  for(let i=0;i<boundary.length;i++){
   const a=boundary[i],b=boundary[(i+1)%boundary.length];

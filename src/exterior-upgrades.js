@@ -13,7 +13,7 @@ export function addWindowAwnings({parents,box,rod,group,M}){
  for(const w of GROUND.rightWindows)canopy(parents[0],entrySpan(w.z)[1]+.095,w.z,w.width+.28,w.head,Math.PI/2,'Mai_che_cua_so_phong_ong_ba');
  for(const [w,name] of [[MASTER_SUITE.ventilationWindow,'master'],[MASTER_SUITE.commonWindow,'khu_chung'],[SMALL_SUITE.window,'ban_hoc_phong_nho']])canopy(parents[1],entrySpan(w.z)[1]+.095,w.z,w.width+.26,w.head,Math.PI/2,`Mai_che_cua_so_${name}`);
  canopy(parents[1],1.58,-.045,2.42,2.55,Math.PI,'Mai_che_cua_so_PC_master');
- canopy(parents[2],3.9,THIRD.enclosure.front-.066,1.66,2.4,Math.PI,'Mai_che_cua_so_phong_tho');
+ // The large folding prayer-room door is sheltered by the penthouse roof overhang.
 }
 
 export function addRoofUtilities({roof,box,cyl,rod,group,M}){
@@ -29,16 +29,17 @@ export function addRoofUtilities({roof,box,cyl,rod,group,M}){
  }
  const cap=new T.Mesh(new T.SphereGeometry(.51,32,12,0,Math.PI*2,0,Math.PI/2),steel);cap.scale.y=.18;cap.position.y=1.5;tank.add(cap);
  cyl(tank,0,1.57,0,.17,.035,M.dark);rod(tank,[.45,.35,0],[.7,.35,0],.018,steel);
- rod(g,[x+.7,y+.35,z],[4.9,y+.35,z],.016,M.white);rod(g,[4.9,y+.35,z],[4.9,y+.35,10.58],.016,M.white);rod(g,[4.9,y+.35,10.58],[4.9,.25,10.58],.016,M.white);
+ rod(g,[x+.7,y+.35,z],[4.9,y+.35,z],.016,M.white);rod(g,[4.9,y+.35,z],[4.9,y+.35,THIRD.enclosure.back-.02],.016,M.white);rod(g,[4.9,y+.35,THIRD.enclosure.back-.02],[4.9,.25,THIRD.enclosure.back-.02],.016,M.white);
+ const rear=THIRD.enclosure.back;
  const ladder=group(g);ladder.name='Thang_thep_len_mai_chuong_cu';ladder.userData={clearWidth:.46,rungSpacing:.28,roofLevel:y};
  for(const xx of[2.17,2.63]){
-  rod(ladder,[xx,.22,10.82],[xx,y+1.0,10.82],.021,M.dark);
-  rod(ladder,[xx,y+1.0,10.82],[xx,y+1.0,10.38],.021,M.dark);
-  rod(ladder,[xx,y+1.0,10.38],[xx,y+.04,10.38],.021,M.dark);
-  for(const yy of[.6,1.8,2.8])rod(ladder,[xx,yy,10.82],[xx,yy,10.64],.014,M.dark);
+  rod(ladder,[xx,.22,(rear+.22)],[xx,y+1.0,(rear+.22)],.021,M.dark);
+  rod(ladder,[xx,y+1.0,(rear+.22)],[xx,y+1.0,(rear-.22)],.021,M.dark);
+  rod(ladder,[xx,y+1.0,(rear-.22)],[xx,y+.04,(rear-.22)],.021,M.dark);
+  for(const yy of[.6,1.8,2.8])rod(ladder,[xx,yy,(rear+.22)],[xx,yy,(rear+.04)],.014,M.dark);
  }
- for(let yy=.3;yy<y+.05;yy+=.28)rod(ladder,[2.17,yy,10.82],[2.63,yy,10.82],.016,M.dark);
- box(g,2.4,THIRD.enclosure.height+THIRD.enclosure.roofThickness+THIRD.enclosure.roofSlope*(THIRD.enclosure.back+.12-10.32)+.005,10.32,.7,.025,.55,M.dark,.006);
+ for(let yy=.3;yy<y+.05;yy+=.28)rod(ladder,[2.17,yy,(rear+.22)],[2.63,yy,(rear+.22)],.016,M.dark);
+ box(g,2.4,THIRD.enclosure.height+THIRD.enclosure.roofThickness+THIRD.enclosure.roofSlope*(THIRD.enclosure.back+.12-(rear-.28))+.005,(rear-.28),.7,.025,.55,M.dark,.006);
  return g;
 }
 

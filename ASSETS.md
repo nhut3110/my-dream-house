@@ -37,3 +37,19 @@ Hai file README giấy phép nguyên gốc lưu cùng GLB trong `public/models`.
 ## Sofa hiện đang dùng
 
 Sofa chữ L 2,30 × 1,62 m là mô hình tham số tự dựng trong `src/house.js` (sectionalSofa). GLB GlamVelvetSofa cũ không còn được tải, giữ lại để tham khảo cùng giấy phép gốc.
+
+## Tủ lạnh tham chiếu — 15/11/2026
+
+- Mô hình tham số theo **Samsung RS62R5001M9**, 2 cánh side-by-side: rộng 912 × sâu 716 × cao 1780 mm. Kích thước mô hình gồm cả cánh, không cộng cánh ra ngoài chiều sâu tham chiếu.
+- Thông số hãng: https://www.samsung.com/th/refrigerators/side-by-side/655l-gentle-silver-matt-rs62r5001m9-st/
+- Hướng dẫn lắp đặt Samsung (tham khảo chung; cần đối chiếu máy mua thực): https://www.samsung.com/vn/support/home-appliances/how-to-install-a-samsung-side-by-side-refrigerator/ — hai bên 100 mm, phía trên 50 mm, phía sau 50 mm. Mô hình chừa 100 mm hai bên, 55 mm nóc và trên 50 mm sau lưng; không bịt kín khe thoáng.
+- Đã đối chiếu thêm Panasonic NR-YW590YMMV 4 cánh: 750 × 750 × 1890 mm (R × S × C), https://www.panasonic.com/vn/consumer/home-appliances/fridge/prime-edition/nr-yw590ymmv.html . Đây là mẫu cao hơn; không mặc định rằng mọi tủ 4 cánh đều lắp vừa khoang hiện tại.
+
+## Compact worship furniture reference · 2026-11-15
+
+- [Tâm Việt TT215](https://banthotamviet.vn/shop/phong-tho-gia-tien-va-tho-phat-tt215/): reference for ancestor table 153 × 61 × 107 cm and higher Buddhist tabletop.
+- [Nét Việt PT16](https://banthonetviet.com/khong-gian-phong-tho-pt16): coordinated timber furniture, restrained traditional/modern apron and matching secondary table.
+- [Tâm Phát BT-1082](https://noithattamphat.com/phong-tho-phat-va-gia-tien-dep-mau-bt-1082): separate matching tables, Buddhist table higher than ancestor table.
+- [bantho.net combined room](https://bantho.net/mau-ban-tho-phat-va-2-ban-tho-gia-tien-chung-phong-tho): 127 × 61 cm Buddhist table reference footprint.
+
+Original procedural geometry; reference images/models are not copied or redistributed. Current option keeps owner-requested Buddha-front / ancestors-back arrangement, not a claim of universal ritual correctness. Ancestor tabletop 153 × 61 × 107 cm, Buddhist tabletop 127 × 61 × 127 cm. The 100 mm gap is an intentional compact furniture separation, not a walking/service aisle; servicing is from the sides. Side screen reduced 185 → 145 cm, retains concealment of legs/cable route; front tabletop overhangs screen by 15 mm.

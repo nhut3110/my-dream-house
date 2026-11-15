@@ -1,7 +1,7 @@
 import geometry from '../plans/plot-geometry.json' with {type:'json'};
 export const plot = geometry.vertices.map(v=>[v.x_m,v.y_m]);
-export const HEIGHT=3.3;
-export const STAIR={x:.25,z:5.45,width:.95,landing:.95,firstRisers:4,secondRisers:16,middleRisers:12,lastRisers:4,risers:20,rise:.165,tread:.27,type:'L',firstDirection:'right-to-left',secondDirection:'towards-rear'};
+export const HEIGHT=3.6;
+export const STAIR={x:.25,z:5.45,width:.95,landing:.95,firstRisers:5,secondRisers:16,middleRisers:11,lastRisers:5,risers:21,rise:HEIGHT/21,tread:.27,middleTread:.295,type:'L',firstDirection:'right-to-left',secondDirection:'towards-rear'};
 export const MIRROR_X=Math.max(...plot.map(v=>v[0]));
 export const toWorld=([x,z])=>[MIRROR_X-x,z];
 export const levels=[
@@ -12,28 +12,28 @@ export const levels=[
 export const assumptions={units:'metres',externalWall:.18,internalWall:.1,floorToFloor:HEIGHT,stair:STAIR,style:'Contemporary Japandi / warm oak, mineral plaster, olive linen',entry:'Front recessed corner',source:'../plans/plot-geometry.json',stage:'Concept design, not construction drawings'};
 
 // Updated ground-floor brief. Coordinates are metres, right/left are from the gate looking in.
-export const GROUND={glassLine:2.3,porchLevel:-.3,stepRise:.15,stepTread:.3,gateEdge:0,gateOpening:2.4,securityHeight:2.2,sofa:{x:4.5,z:3.85,length:2.3,depth:.92,chaiseDepth:1.62},tv:{x:.5,z:3.7},rightWindows:[{z:11.65,width:1.8,sill:1.1,head:2.5}],exit:{z:5.65,width:.95},bedroomStart:9.20,beds:[{x:1.25,z:11.85,width:1,length:2},{x:3.75,z:11.85,width:1,length:2}],wc:{x1:.35,x2:1.35,z1:6.65,z2:8.18},parking:[{x:1.14,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:2.27,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:3.4,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132}],closedSides:['left','rear']};
+export const GROUND={glassLine:2.3,porchLevel:-.3,stepRise:.15,stepTread:.3,gateEdge:0,gateOpening:2.4,securityHeight:2.2,sofa:{x:4.5,z:3.65,length:2.3,depth:.92,chaiseDepth:1.62},tv:{x:.5,z:3.7},rightWindows:[{z:11.65,width:1.8,sill:1.1,head:2.5}],exit:{z:5.65,width:.95},bedroomStart:9.20,beds:[{x:1.25,z:11.85,width:1,length:2},{x:3.75,z:11.85,width:1,length:2}],wc:{x1:.35,x2:1.35,z1:6.65,z2:8.18},parking:[{x:1.14,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:2.27,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:3.4,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132}],closedSides:['left','rear']};
 
 export const HUMAN={height:1.7,eye:1.58,shoulder:.46};
 export const HONDA_SOURCE='https://www.honda.com.vn/xe-may/san-pham/lead-abs';
 
 // Current iteration: living room plus the requested left-wall L stair.
-export const LIVING={start:2.3,end:5.8,coffee:{x:3.08,z:3.4,width:.7,length:.95},rug:{x:3.35,z:3.85,width:2.95,length:2.7},aisle:{minX:.9,maxX:2.55,startZ:2.5,endZ:8}};
+export const LIVING={start:2.3,end:5.8,coffee:{x:3.08,z:3.55,width:.7,length:.95},rug:{x:3.35,z:3.65,width:2.95,length:2.3},aisle:{minX:.9,maxX:2.55,startZ:2.5,endZ:8}};
 
 export function clipAtZ(polygon,z,front){const result=[];for(let i=0;i<polygon.length;i++){const a=polygon[i],b=polygon[(i+1)%polygon.length],inside=p=>front?p[1]<=z:p[1]>=z;if(inside(a))result.push(a);if(inside(a)!==inside(b)){const t=(z-a[1])/(b[1]-a[1]);result.push([a[0]+t*(b[0]-a[0]),z])}}return result}
 export function entrySpan(z){const xs=[];for(let i=0;i<plot.length;i++){const a=plot[i],b=plot[(i+1)%plot.length];if((a[1]<=z&&b[1]>z)||(b[1]<=z&&a[1]>z)){const t=(z-a[1])/(b[1]-a[1]);xs.push(a[0]+(b[0]-a[0])*t)}}return [MIRROR_X-Math.max(...xs)+.095,MIRROR_X-Math.min(...xs)-.095]}
 
-export const SERVICE={kitchen:{x:.84,depth:.64,start:6.5,end:9.09,top:.9,sinkZ:8.77,sinkX:3.6,hobZ:7.35,mirrorAxis:5.45,returnLeft:2.48,returnDepth:.64,water:{x:2.25,z:8.78,rotation:0}},fridge:{x:.65,z:9.28,depth:.716,width:.912,height:1.78},dining:{x:2.8,z:6.7,width:.8,length:1.4,rotation:Math.PI/2},rear:{start:9.15,splitX:1.66,wcStart:11.15,end:13.02,entryX:2.05,bedDoorX:2.05,bedDoorZ:10.64,wcDoorX:1.15}};
-export function stairUnderside(z){const start=STAIR.z+STAIR.width,end=start+(STAIR.middleRisers-1)*STAIR.tread;if(z>=end)return (STAIR.firstRisers+STAIR.middleRisers)*STAIR.rise-.18;const first=(STAIR.firstRisers+1)*STAIR.rise-.065-.12;return first+(z-start)*(STAIR.middleRisers-2)*STAIR.rise/(end-start)}
+export const SERVICE={kitchen:{x:.84,depth:.64,start:6.5,end:9.09,top:.9,sinkZ:8.77,sinkX:3.6,hobZ:7.35,mirrorAxis:5.45,returnLeft:2.48,returnDepth:.64,water:{x:2.25,z:8.78,rotation:0}},fridge:{x:.69,z:8.92,depth:.716,width:.912,height:1.78,sideClearance:.10,topClearance:.055,model:"Samsung RS62R5001M9"},dining:{x:3.08,z:6.90,width:.8,length:1.4,rotation:Math.PI/2},rear:{start:9.15,splitX:1.66,wcStart:11.15,end:13.02,entryX:2.05,bedDoorX:2.05,bedDoorZ:10.64,wcDoorX:1.15}};
+export function stairUnderside(z){const start=STAIR.z+STAIR.width,end=start+(STAIR.middleRisers-1)*STAIR.middleTread;if(z>=end)return (STAIR.firstRisers+STAIR.middleRisers)*STAIR.rise-.18;const first=(STAIR.firstRisers+1)*STAIR.rise-.065-.12;return first+(z-start)*(STAIR.middleRisers-2)*STAIR.rise/(end-start)}
 
 export const LIVING_MIRROR_AXIS=5.3;
 
-export const REAR_FURNITURE={beds:[{x:4.1,z:10.0,width:1.4,length:2,rotation:-Math.PI/2},{x:4.1,z:12.2,width:1.4,length:2,rotation:-Math.PI/2}],wardrobe:{x:2.0,z:12.15,width:1.9,depth:.58,height:2.25,rotation:-Math.PI/2},cabinetEnd:9.796};
+export const REAR_FURNITURE={beds:[{x:4.1,z:10.0,width:1.4,length:2,rotation:-Math.PI/2},{x:4.1,z:12.2,width:1.4,length:2,rotation:-Math.PI/2}],wardrobe:{x:2.0,z:12.15,width:1.9,depth:.58,height:2.25,rotation:-Math.PI/2},cabinetEnd:9.501};
 
 // Shared landing/opening geometry for the stair and the future upper-floor layout.
-const rearTurnZ=STAIR.z+STAIR.width+(STAIR.middleRisers-1)*STAIR.tread;
+const rearTurnZ=STAIR.z+STAIR.width+(STAIR.middleRisers-1)*STAIR.middleTread;
 const lastLandingX=STAIR.x+STAIR.width+(STAIR.lastRisers-1)*STAIR.tread;
-export const UPPER={slabThickness:.18,guardHeight:1.05,landingStart:rearTurnZ,landingX:lastLandingX,hole:{left:STAIR.x,right:STAIR.x+STAIR.width,start:STAIR.z+STAIR.width+STAIR.tread,end:rearTurnZ+STAIR.landing},opening:[[STAIR.x,STAIR.z+STAIR.width+STAIR.tread],[STAIR.x+STAIR.width,STAIR.z+STAIR.width+STAIR.tread],[STAIR.x+STAIR.width,rearTurnZ],[lastLandingX+STAIR.landing,rearTurnZ],[lastLandingX+STAIR.landing,rearTurnZ+STAIR.landing],[STAIR.x,rearTurnZ+STAIR.landing]]};
+export const UPPER={slabThickness:.18,guardHeight:1.05,landingStart:rearTurnZ,landingX:lastLandingX,hole:{left:STAIR.x,right:STAIR.x+STAIR.width,start:STAIR.z+STAIR.width+STAIR.middleTread,end:rearTurnZ+STAIR.landing},opening:[[STAIR.x,STAIR.z+STAIR.width+STAIR.middleTread],[STAIR.x+STAIR.width,STAIR.z+STAIR.width+STAIR.middleTread],[STAIR.x+STAIR.width,rearTurnZ],[lastLandingX+STAIR.landing,rearTurnZ],[lastLandingX+STAIR.landing,rearTurnZ+STAIR.landing],[STAIR.x,rearTurnZ+STAIR.landing]]};
 
 // Visual alternative requested by owner: outward, small-radius porch corner.
 // plot remains the original traced parcel; buildingPlot is the proposed envelope.
@@ -46,9 +46,9 @@ export const SECOND={balconyEnd:1.45,masterEnd:6.0,smallStart:8.95,smallLeft:2.2
 const masterFront=SECOND.balconyEnd+.08;
 export const UPPER_LAYOUT={
  masterBoundary:[[entrySpan(5.3)[0],5.3],[3.15,5.3],[3.15,5.35],[3.15,6.3],[3.15,6.8],[entrySpan(6.8)[1],6.8]],
- smallBoundary:[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.1,10.4],[3.1,9.2],[entrySpan(9.2)[1],9.2]],
+ smallBoundary:[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.4,10.4],[3.4,9.2],[entrySpan(9.2)[1],9.2]],
  masterPolygon:[[entrySpan(masterFront)[0],masterFront],[entrySpan(masterFront)[1],masterFront],[entrySpan(6.8)[1],6.8],[3.15,6.8],[3.15,5.3],[2.2,5.3],[entrySpan(5.3)[0],5.3]],
- smallPolygon:[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.1,10.4],[3.1,9.2],[entrySpan(9.2)[1],9.2],[entrySpan(13.08)[1],13.08],[entrySpan(13.08)[0],13.08]],
+ smallPolygon:[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.4,10.4],[3.4,9.2],[entrySpan(9.2)[1],9.2],[entrySpan(13.08)[1],13.08],[entrySpan(13.08)[0],13.08]],
  deck:{x1:2.6,x2:5.12,z1:6.9,z2:9.08,height:.14},
  chairs:[{x:3.27,z:8.18,rotation:-.35,color:'#a4ad92'},{x:4.5,z:8.42,rotation:.55,color:'#d0b99d'}],
  fan:{x:2.92,z:8.85},
@@ -65,7 +65,7 @@ export const SMALL_SUITE={
 };
 
 const SB=SMALL_SUITE.balcony;
-UPPER_LAYOUT.smallPolygon=[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.1,10.4],[3.1,9.2],[entrySpan(9.2)[1],9.2],[entrySpan(SB.front)[1],SB.front],[SB.innerX,SB.front],[SB.innerX,SB.back],[entrySpan(SB.back)[1],SB.back],[entrySpan(13.08)[1],13.08],[entrySpan(13.08)[0],13.08]];
+UPPER_LAYOUT.smallPolygon=[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.4,10.4],[3.4,9.2],[entrySpan(9.2)[1],9.2],[entrySpan(SB.front)[1],SB.front],[SB.innerX,SB.front],[SB.innerX,SB.back],[entrySpan(SB.back)[1],SB.back],[entrySpan(13.08)[1],13.08],[entrySpan(13.08)[0],13.08]];
 export const SMALL_BALCONY=[[SB.innerX,SB.front],[entrySpan(SB.front)[1],SB.front],[entrySpan(SB.back)[1],SB.back],[SB.innerX,SB.back]];
 
 export const MASTER_SUITE={
@@ -88,10 +88,10 @@ export const MASTER_BALCONY=clipDesignRight(clipAtZ(buildingPlot,MASTER_SUITE.ba
 UPPER_LAYOUT.masterPolygon=[[.1,.15],[MASTER_SUITE.balcony.splitX-.05,.15],[MASTER_SUITE.balcony.splitX-.05,1.53],[entrySpan(1.53)[1],1.53],[entrySpan(6.8)[1],6.8],[3.15,6.8],[3.15,5.3],[2.2,5.3],[entrySpan(5.3)[0],5.3]];
 
 export const THIRD={
- frontEnd:6.5,rearStart:10.6,
- enclosure:{front:6.5,back:10.6,right:5.2,height:3.05,roofThickness:.16,roofSlope:.015,frontDoor:{left:1.4,width:.9},rearDoor:{left:3.25,width:.95}},
- prayer:{left:2.45,right:5.2,front:6.5,back:9.1,sideDoorStart:8,sideDoorWidth:.9,height:3.05,altarX:3.85,altarZ:8.67},
- laundry:{x1:.28,x2:1.85,z1:10.52,z2:11.65,roofHeight:2.55,machines:[{x:.7,z:11.025,rotation:Math.PI,kind:'washer'},{x:1.4,z:11.025,rotation:Math.PI,kind:'dryer'}],machineWidth:.6,machineDepth:.65},
+ frontEnd:6.5,rearStart:10.72,
+ enclosure:{front:6.5,back:10.72,right:5.2,height:3.05,roofThickness:.16,roofSlope:.015,frontDoor:{left:.6,width:4.2,height:2.5,kind:'folding'},rearDoor:{left:3.4,width:.95}},
+ prayer:{left:1.25,right:5.2,front:6.5,back:9.15,sideDoorStart:8,sideDoorWidth:.9,height:3.05,rearWallLeft:1.25,rearWallRight:4.0,altarX:2.625,altarZ:8.7,buddhaZ:7.99,ancestor:{width:1.53,depth:.61,height:1.07},buddhist:{width:1.27,depth:.61,height:1.27},screen:{x:4.0,z1:7.70,z2:9.15,height:1.65}},
+ laundry:{x1:.28,x2:1.85,z1:10.64,z2:11.77,roofHeight:2.55,machines:[{x:.7,z:11.145,rotation:Math.PI,kind:'washer'},{x:1.4,z:11.145,rotation:Math.PI,kind:'dryer'}],machineWidth:.6,machineDepth:.65},
  handwash:{x:4.7,z:12.61,width:.8,depth:.6,height:.59},
  drying:{left:2.15,right:3.85,front:11.5,back:12.8,height:1.9},
  terrace:{tableX:3.5,tableZ:3.45,parapet:.58,rail:.57,deck:{left:2.3,right:4.85,front:2.1,back:4.85}},
