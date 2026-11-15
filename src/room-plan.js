@@ -1,5 +1,7 @@
 import {GROUND,STAIR,SERVICE,entrySpan,clipAtZ,plot,toWorld,buildingPlot,SECOND,UPPER,UPPER_LAYOUT,SMALL_SUITE,MASTER_SUITE,MASTER_BALCONY,SMALL_BALCONY,THIRD} from './design.js';
 const r=SERVICE.rear;
+const dry=MASTER_SUITE.washbasin.niche;
+const masterDryPoints=[[dry.left,dry.front],[dry.right,dry.front],[dry.right,dry.back],[dry.left,dry.back]];
 const strip=(a,b)=>{const [l0,r0]=entrySpan(a),[l1,r1]=entrySpan(b);return [[l0,a],[r0,a],[r1,b],[l1,b]]};
 const right0=entrySpan(r.start+.05)[1],right1=entrySpan(r.end)[1];
 export const measuredRooms=[
@@ -8,12 +10,13 @@ export const measuredRooms=[
  {name:'Bếp · ăn · thang',points:strip(STAIR.z,r.start-.05),note:'Diện tích khu chung, gồm thang và tủ'},
  {name:'Sảnh · lavabo',points:[[entrySpan(r.start+.05)[0],r.start+.05],[r.entryX-.05,r.start+.05],[r.entryX-.05,r.wcStart-.05],[entrySpan(r.wcStart-.05)[0],r.wcStart-.05]],note:'Lối vào WC và phòng ngủ'},
  {name:'WC',points:[[entrySpan(r.wcStart+.05)[0],r.wcStart+.05],[r.splitX-.05,r.wcStart+.05],[r.splitX-.05,r.end],[entrySpan(r.end)[0],r.end]],note:'Kích thước lọt lòng'},
- {name:'Phòng ông bà',points:[[r.entryX+.05,r.start+.05],[right0,r.start+.05],[right1,r.end],[r.splitX+.05,r.end],[r.splitX+.05,r.wcStart+.05],[r.entryX+.05,r.wcStart+.05]],note:'Có góc lõm; ngang ghi theo khoảng hẹp–rộng'}
+ {name:'Phòng ông bà',points:[[r.entryX+.05,r.start+.05],[right0,r.start+.05],[right1,r.end],[r.splitX+.05,r.end],[r.splitX+.05,r.wcStart+.05],[r.entryX+.05,r.wcStart+.05]],note:'Hai giường 1,40 × 2,00 m; khe giữa giường 0,72 m, lối cuối giường hơn 0,90 m'}
 ];
 export const upperRooms=[
  {name:'Ban công',points:MASTER_BALCONY,note:'Vách bên trái gióng theo vách WC/lối vào, rộng hơn 30 cm'},
- {name:'Master',points:UPPER_LAYOUT.masterPolygon,holes:[[[MASTER_SUITE.bath.left,MASTER_SUITE.bath.front],[MASTER_SUITE.bath.right,MASTER_SUITE.bath.front],[MASTER_SUITE.bath.right,MASTER_SUITE.bath.back],[MASTER_SUITE.bath.left,MASTER_SUITE.bath.back]]],note:'Gồm phần ban công cũ nhập vào phòng; đã trừ WC'},
+ {name:'Master',points:UPPER_LAYOUT.masterPolygon,holes:[[[MASTER_SUITE.bath.left,MASTER_SUITE.bath.front],[MASTER_SUITE.bath.right,MASTER_SUITE.bath.front],[MASTER_SUITE.bath.right,MASTER_SUITE.bath.back],[MASTER_SUITE.bath.left,MASTER_SUITE.bath.back]],masterDryPoints],note:'Gồm phần ban công cũ nhập vào phòng; đã trừ WC và hốc lavabo'},
  {name:'WC master',points:[[MASTER_SUITE.bath.left,MASTER_SUITE.bath.front+.05],[MASTER_SUITE.bath.right-.05,MASTER_SUITE.bath.front+.05],[MASTER_SUITE.bath.right-.05,MASTER_SUITE.bath.back],[MASTER_SUITE.bath.left,MASTER_SUITE.bath.back]],note:'WC riêng bên trái cửa vào; cửa lùa'},
+ {name:'Lavabo master',points:masterDryPoints,note:'Khu khô mở vào phòng ngủ, tách khỏi phòng tắm và bồn cầu'},
  {name:'Ban công phòng nhỏ',points:SMALL_BALCONY,note:'Loggia lõm trong ranh đất, cửa lùa và chậu cây nhỏ'},
  {name:'Phòng nhỏ',points:UPPER_LAYOUT.smallPolygon,holes:[[[SMALL_SUITE.bath.left,SMALL_SUITE.bath.front],[SMALL_SUITE.bath.right,SMALL_SUITE.bath.front],[SMALL_SUITE.bath.right,SMALL_SUITE.bath.back],[SMALL_SUITE.bath.left,SMALL_SUITE.bath.back]]],note:'Giường 1,40 × 2,00 m; đã trừ khu WC, chưa trừ đồ đạc'},
  {name:'WC phòng nhỏ',points:[[SMALL_SUITE.bath.left,SMALL_SUITE.bath.front],[SMALL_SUITE.bath.right-.05,SMALL_SUITE.bath.front],[SMALL_SUITE.bath.right-.05,SMALL_SUITE.bath.back],[SMALL_SUITE.bath.left,SMALL_SUITE.bath.back]],note:'Tắm, bồn cầu, lavabo; cửa lùa trong phòng'},
@@ -63,7 +66,7 @@ function detailDrawing(points,color,title,holes=[]){
 }
 export function createRoomPlan(floor=0){
  const rooms=floor===2?roofRooms:floor===1?upperRooms:measuredRooms,el=document.createElement('section');el.id='room-measure-plan';el.hidden=true;el.tabIndex=0;el.setAttribute('aria-label','Mặt bằng kích thước các phòng');
- const colors=['#ddd6c6','#dce5cd','#e6dccd','#e2e7df','#cbdedb','#ded6e5','#d8ddd2'];
+ const colors=['#ddd6c6','#dce5cd','#e6dccd','#e2e7df','#cbdedb','#ded6e5','#d8ddd2','#e7dfd4'];
  // Same scale on both axes: the drawing and the angle measurements agree.
  const x=n=>35+n*43,y=n=>610-n*43;
  const zones=rooms.map((room,i)=>{const p=labelPoint(room);return `<g><path d="${[room.points,...(room.holes||[])].map(poly=>pathOf(poly,x,y)).join(' ')}" fill-rule="evenodd" fill="${colors[i]}" stroke="#717a68" stroke-width="1"/><circle cx="${x(p[0])}" cy="${y(p[1])}" r="10" fill="#f6f6ef"/><text x="${x(p[0])}" y="${y(p[1])+3.5}" class="plan-zone-title">${i+1}</text></g>`}).join('');

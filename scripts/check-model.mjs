@@ -1,6 +1,7 @@
+import {SITE,gateRampCorners,streetPolygon} from '../src/site-plan.js';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {GROUND,toWorld,HUMAN,LIVING,STAIR,HEIGHT,SERVICE,stairUnderside,LIVING_MIRROR_AXIS,REAR_FURNITURE,UPPER,SECOND,buildingPlot,UPPER_LAYOUT,SMALL_SUITE,entrySpan,MASTER_SUITE,MASTER_BALCONY,THIRD,BEDROOM_AC} from '../src/design.js';
+import {plot,GROUND,toWorld,HUMAN,LIVING,STAIR,HEIGHT,SERVICE,stairUnderside,LIVING_MIRROR_AXIS,REAR_FURNITURE,UPPER,SECOND,buildingPlot,UPPER_LAYOUT,SMALL_SUITE,entrySpan,MASTER_SUITE,MASTER_BALCONY,THIRD,BEDROOM_AC} from '../src/design.js';
 const geometry=JSON.parse(fs.readFileSync(new URL('../plans/plot-geometry.json',import.meta.url)));
 const v=geometry.vertices;
 assert.equal(v.length,7);
@@ -11,7 +12,7 @@ assert.equal(HUMAN.height,1.7);
 assert.equal(GROUND.sofa.length,2.3);
 assert.ok(LIVING.coffee.x+LIVING.coffee.width/2<GROUND.sofa.x-.6,'Coffee table leaves room before sofa');
 const source=fs.readFileSync(new URL('../src/house.js',import.meta.url),'utf8');
-assert.equal(STAIR.type,'L');assert.equal(STAIR.firstRisers,4);assert.equal(STAIR.firstRisers+STAIR.secondRisers,STAIR.risers);assert.ok(Math.abs(STAIR.risers*STAIR.rise-HEIGHT)<1e-9);assert.ok(STAIR.z>GROUND.tv.z+1.45+.4,'Stair starts behind TV');
+assert.equal(STAIR.type,'L');assert.equal(STAIR.firstRisers,4);assert.equal(STAIR.firstRisers+STAIR.secondRisers,STAIR.risers);assert.ok(Math.abs(STAIR.risers*STAIR.rise-HEIGHT)<1e-9);assert.ok(STAIR.z>GROUND.tv.z+1.2+.4,'Stair clears rear of 2.4 m TV panel by at least 400 mm');
 assert.ok(!source.includes('underStairWC('),'No under-stair WC in current iteration');
 assert.ok(source.includes('index<1'),'Ground-floor furnishings are not duplicated across storeys');
 assert.ok(toWorld([LIVING_MIRROR_AXIS-GROUND.sofa.x,0])[0]>toWorld([LIVING_MIRROR_AXIS-GROUND.tv.x,0])[0],'Sofa left and TV right from yard');
@@ -28,12 +29,13 @@ assert.ok(cookingFace-(d.x+d.length/2)>.9,'Right cooking aisle exceeds .9 m');
 assert.ok((d.x-d.length/2)-1.195>.7,'Left storage aisle exceeds .7 m');
 assert.ok(k.start>GROUND.exit.z+GROUND.exit.width/2+.25,'Kitchen starts behind relocated living-room exit');
 assert.ok(r.splitX<2&&r.bedDoorX===r.entryX,'Bedroom door is in shared left side partition');assert.ok(r.bedDoorZ-.425>r.start&&r.bedDoorZ+.425<r.wcStart,'Both doors meet the shared vestibule');assert.ok(!GROUND.rightWindows.some(w=>w.z<5),'No window behind TV');assert.ok(f.width>.9&&f.height<1.9,'Side-by-side fridge envelope');assert.ok(GROUND.exit.z-GROUND.exit.width/2>GROUND.tv.z+1.2+.2,'Exit clears the rear end of the TV wall panel');
-assert.ok(f.z+f.width/2<r.start-.1,'Fridge stays outside rear partition');
+assert.ok(f.x+f.depth/2<r.entryX-.7,'Fridge remains beside, not inside, the expanded bedroom');
+assert.ok(f.z+f.width/2<r.bedDoorZ-.425-.2,'Fridge clears approach to bedroom doorway');
 assert.ok(d.z+d.length/2<r.start-.9,'Access before rear room doors');
 const [bed1,bed2]=REAR_FURNITURE.beds,w=REAR_FURNITURE.wardrobe;
 assert.ok(r.entryX-r.splitX>=.29,'Entry recess widens shared vestibule');
 assert.equal(bed1.rotation,-Math.PI/2);assert.equal(bed2.rotation,-Math.PI/2);
-assert.ok(bed2.z-bed1.z-1.08>.55,'Space between transverse bed frames exceeds .55 m');
+assert.ok(bed2.z-bed1.z-((bed1.width+.08)+(bed2.width+.08))/2>=.7,'Space between 1.4 m transverse bed frames is at least .7 m');
 assert.ok(bed1.x-1.04-r.entryX-.05>.9,'Foot-end passage exceeds .9 m');
 assert.equal(w.rotation,-Math.PI/2,'Wardrobe faces into room from shared WC wall');
 assert.ok(w.x-w.depth/2>=r.splitX+.05,'Wardrobe back meets shared wall without overlap');
@@ -63,7 +65,9 @@ assert.ok(bedFoot-(S.wardrobe.z+S.wardrobe.depth/2+.04)>=.9,'Wardrobe-to-bed pas
 assert.ok(S.desk.z+S.desk.width/2<bedFoot-.05,'Desk stays clear of bed frame');
 assert.ok(S.bath.right-.05-S.bath.left>=1.45-1e-9,'Compact WC usable width at least 1.45 m');
 assert.ok(S.bath.doorStart>S.bath.front&&S.bath.doorStart+S.bath.doorWidth<12.11,'WC door clear of shower');
-console.log('PASS: furnished small suite bed/wardrobe/desk clearances and WC entrance.');
+assert.ok(S.vanity.x-S.vanity.width/2>S.bath.left+.05,'Small WC vanity fits against front wall');
+assert.ok(S.bath.right-.05-(S.vanity.x+S.vanity.width/2)>=.7,'Small WC vanity leaves 700 mm clear approach beside doorway');
+console.log('PASS: furnished small suite bed/wardrobe/desk clearances, WC entrance and vanity approach.');
 
 const M=MASTER_SUITE;
 assert.ok(M.bath.front-.05-(M.bed.z+(M.bed.width+.22)/2)>.08,'Master headboard clears WC partition');
@@ -79,7 +83,7 @@ console.log('PASS: master WC/bed/PC chair/wardrobe clearances and reduced balcon
 
 assert.equal(M.tv.z,M.bed.z,'TV centered on master bed axis');
 assert.ok(M.commonWindow.z-M.commonWindow.width/2>UPPER_LAYOUT.masterBoundary.at(-1)[1]+.05,'Common window clears moved master partition');
-assert.equal(M.commonWindow.z,(UPPER_LAYOUT.masterBoundary.at(-1)[1]+UPPER_LAYOUT.smallBoundary.at(-1)[1])/2,'Common window centered between bedroom partitions');
+assert.ok(M.commonWindow.z+M.commonWindow.width/2<plot[4][1]-.05,'Common window stays on one straight wall before the facade corner');
 assert.ok(M.commonWindow.z+M.commonWindow.width/2<UPPER_LAYOUT.smallBoundary.at(-1)[1]-.05,'Common window clears small-room partition');
 assert.ok(M.ventilationWindow.z+M.ventilationWindow.width/2<M.wardrobe.z-M.wardrobe.width/2,'Master ventilation window clears wardrobe');
 assert.ok(M.endWardrobe.z+M.endWardrobe.depth/2<UPPER_LAYOUT.masterBoundary.at(-1)[1]-.04,'Back wardrobe fits moved wall');
@@ -197,9 +201,10 @@ assert.ok(rectangle.every(d=>d.angle===90));
 assert.ok(polygonDimensions([[0,0],[3,0],[3,1],[1,1],[1,3],[0,3]]).some(d=>d.angle===270));
 console.log('PASS: every room edge, clockwise/counterclockwise angles, rectangles and reflex corners.');
 
-assert.ok(Math.abs((SERVICE.rear.start-.05)-REAR_FURNITURE.cabinetEnd)<1e-9,'Kitchen-facing bedroom wall aligns with fridge end panel');
+assert.ok(REAR_FURNITURE.cabinetEnd<SERVICE.rear.bedDoorZ-.425-.2,'Retained under-stair fridge panel clears bedroom doorway');
 assert.ok(GROUND.exit.z+GROUND.exit.width/2<SERVICE.rear.start-.05,'Exit frame clears bedroom wall');
-assert.ok(REAR_FURNITURE.beds[0].z-.54>SERVICE.rear.start+.05+.35,'First bed clears moved front wall');
+for(const bed of REAR_FURNITURE.beds){assert.equal(bed.width,1.4);assert.equal(bed.length,2);assert.ok(bed.z-(bed.width+.08)/2>SERVICE.rear.start+.05,'First bed frame clears moved front wall');assert.ok(bed.z+(bed.width+.08)/2<SERVICE.rear.end,'Last bed frame clears rear wall');}
+assert.ok(SERVICE.rear.splitX-.05-entrySpan(SERVICE.rear.end)[0]>=1.4,'WC retains at least 1.4 m clear width');
 console.log('PASS: aligned grandparents partition, side exit and bed clearance.');
 
 assert.ok(Math.abs(k.end-(r.start-.05-.01))<1e-9,'L return meets bedroom wall with 10 mm joint');
@@ -211,3 +216,57 @@ assert.ok(k.water.z+.16<r.start-.05,'Water station stays outside bedroom wall');
 assert.ok(k.hobZ-.3>k.start&&k.hobZ+.3<k.end-k.returnDepth,'Hob clear of counter edges and corner');
 assert.ok(k.sinkX-.32>k.returnLeft&&k.sinkX+.32<entrySpan(k.sinkZ)[1]-.1-k.depth,'Sink fits the return');
 console.log('PASS: rear L kitchen, relocated exit, cooking/dining aisles and water station.');
+
+const V=M.washbasin,N=V.niche;
+assert.ok(V.outside&&V.x-V.length/2>M.bath.right+.05,'Master vanity lies outside wet room');
+assert.ok(V.z-V.depth/2-N.front>=1,'Dry vanity standing depth at least 1 m');
+assert.ok(V.x+V.length/2<N.right&&V.x-V.length/2>N.left,'1100 mm vanity fits niche');
+assert.ok(M.wardrobe.x-M.wardrobe.depth/2-N.right>=1,'Main aisle beside dry niche at least 1 m');
+assert.ok(M.bath.back-M.bath.doorStart-M.bath.doorWidth>=M.bath.doorWidth+.015,'WC sliding leaf has a full pocket beside doorway');
+assert.ok(V.z-V.depth/2>M.bath.doorStart+M.bath.doorWidth+.25,'Vanity stays clear of WC doorway');
+console.log('PASS: separate dry master vanity, standing space, sliding pocket and bedroom aisle.');
+
+assert.equal(-SITE.roadY,.45,'House finished floor is 450 mm above road');
+assert.ok(Math.abs(SITE.porchY-SITE.roadY-.15)<1e-8,'Porch is 150 mm above road');
+assert.equal(-SITE.porchY,.3,'Keep two 150 mm indoor entry steps');
+assert.ok(Math.abs((SITE.sideLanding.top-SITE.roadY)-(-SITE.sideLanding.top))<1e-8,'Single side landing splits 450 mm difference into equal rises');
+assert.ok(SITE.sideLanding.projection+SITE.sideLanding.bevel<=.45,'Side entry stays compact beside wall');
+const ramp=gateRampCorners();
+assert.ok(SITE.rampRun<=.2&&SITE.rampWidth===GROUND.gateOpening,'Curb bevel stays within 200 mm of gate and follows gate width');
+assert.ok(ramp[1][1]<ramp[0][1]&&ramp[2][1]<ramp[3][1],'Curb bevel stays outside the flat parking area');
+assert.ok(ramp.every(p=>p[1]<.05),'No ramp enters the parking area');
+assert.ok(Math.abs(Math.hypot(ramp[1][0]-ramp[0][0],ramp[1][1]-ramp[0][1])-SITE.rampRun)<1e-8,'Curb bevel horizontal run matches plan');
+assert.ok(Math.abs(Math.hypot(ramp[3][0]-ramp[0][0],ramp[3][1]-ramp[0][1])-SITE.rampWidth)<1e-8,'Curb bevel width matches plan');
+for(const extended of[false,true]){
+ const road=streetPolygon(extended);
+ assert.equal(Math.min(...road.map(p=>p[1])),-SITE.frontAlleyWidth,'No extra road branch beyond the crossbar');
+ assert.ok(road.some(p=>p[1]>13),'T stem continues along exposed side');
+}
+assert.ok(SITE.leftHeight>9&&SITE.rearHeight>6&&SITE.rearHeight<SITE.leftHeight,'Three-storey left neighbour and two-storey rear block');
+const allLights=LIGHTING_PLAN.filter(l=>l.primary).toSorted((a,b)=>(b.allPriority||0)-(a.allPriority||0)).slice(0,12);
+for(const floor of[0,1]){
+ assert.equal(allLights.filter(l=>l.floor===floor&&l.zone==='exterior').length,2,'Both side wall lights remain active in whole-house view');
+ assert.ok(allLights.some(l=>l.floor===floor&&l.zone==='front-facade'),'Front facade has an active light in whole-house view');
+}
+console.log('PASS: road/porch/floor levels, flat porch / short integral curb bevel and whole-house exterior lighting budget.');
+
+// Exercise the actual moving roof groups, independent of the renderer and static batching.
+const T=await import('three');
+const {CANOPY,createTerraceCanopy}=await import('../src/terrace-canopy.js');
+const roofMaterial=new T.MeshBasicMaterial(),testRoot=new T.Group();
+const roofModel=createTerraceCanopy({parent:testRoot,M:{dark:roofMaterial,glow:roofMaterial},box(parent,x,y,z,w,h,d,material){
+ const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),material);mesh.position.set(x,y+h/2,z);parent.add(mesh);return mesh;
+}});
+assert.ok(CANOPY.back<THIRD.enclosure.front-.2,'Retracting roof clears penthouse wall and door');
+assert.ok(CANOPY.height+(CANOPY.panels-1)*CANOPY.stackStep+.04<THIRD.enclosure.height,'Stacked panels clear penthouse roof');
+for(const progress of[0,.03,.1,.15,.5,.9,1,.5,0]){
+ roofModel.setProgress(progress);testRoot.updateMatrixWorld(true);
+ const bounds=roofModel.leaves.map(leaf=>new T.Box3().setFromObject(leaf));
+ for(const bound of bounds){assert.ok(bound.min.z>=CANOPY.front-.01&&bound.max.z<=CANOPY.back+.01,'Moving panels stay inside terrace roof footprint');assert.ok(bound.min.y>=CANOPY.height-.001,'Panels remain above fixed guide rails');}
+ for(let i=0;i<bounds.length;i++)for(let j=i+1;j<bounds.length;j++)assert.ok(!bounds[i].intersectsBox(bounds[j]),'Panel frames never intersect during lift, slide or closing');
+ if(progress===1){
+  const stack=bounds.reduce((all,b)=>all.union(b),new T.Box3());assert.ok(stack.max.z-stack.min.z<1.1,'Open roof stacks in rear 1.1 m strip');
+  for(let i=1;i<bounds.length;i++)assert.ok(bounds[i].min.y>bounds[i-1].max.y,'Stacked panels do not collide');
+ }
+}
+console.log('PASS: retractable front terrace roof footprint, stack clearance and reversible panel poses.');

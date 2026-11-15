@@ -1,3 +1,4 @@
+import {SITE} from './site-plan.js';
 import {addWindowAwnings,addSmallBalcony} from './exterior-upgrades.js';
 import {trailingPlanters} from './trailing-garden.js';
 import {displayBookcase,securityCamera} from './home-accessories.js';
@@ -32,9 +33,43 @@ function bedroomSlidingDoor(p,x,z,width,name,rotation=0){
  rod(g,[-width*.612,2.24,0],[width*.612,2.24,0],.018,M.dark);
  glassParts.push({obj:g,floor:p.userData.floor,hideCut:true});return g;
 }
-function windowOn(p,a,b,bottom=.85,top=2.65,mullion=true){const dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);const g=group(p,a[0],a[1],-Math.atan2(dz,dx));box(g,len/2,bottom,0,len,top-bottom,.025,M.glass);for(const x of(mullion?[0,len/2,len]:[0,len]))box(g,x,bottom,0,.045,top-bottom,.075,M.dark);for(const y of[bottom,top])box(g,len/2,y-.02,0,len,.045,.075,M.dark);glassParts.push({obj:g,floor:p.userData.floor,hideCut:true});return g}
+function windowOn(p,a,b,bottom=.85,top=2.65,mullion=true,{security=bottom>0,curtains=true}={}){
+ const dx=b[0]-a[0],dz=b[1]-a[1],len=Math.hypot(dx,dz);
+ const g=group(p,a[0],a[1],-Math.atan2(dz,dx));g.name='Bo_cua_kinh';
+ box(g,len/2,bottom,0,len,top-bottom,.025,M.glass);
+ for(const x of(mullion?[0,len/2,len]:[0,len]))box(g,x,bottom,0,.045,top-bottom,.075,M.dark);
+ for(const y of[bottom,top])box(g,len/2,y-.02,0,len,.045,.075,M.dark);
+ // Resolve inside/outside in world space, including the mirrored interior root.
+ g.updateWorldMatrix(true,false);
+ const middle=g.localToWorld(new T.Vector3(len/2,0,0)),normal=g.localToWorld(new T.Vector3(len/2,0,1)).sub(middle);
+ const inside=normal.dot(new T.Vector3(2.7-middle.x,0,6.6-middle.z))>=0?1:-1;
+ if(security){
+  const grille=group(g);grille.name='Khung_song_bao_ve_cua_so';grille.userData={openable:true,maxClearGap:.11};
+  const z=-inside*.13,frame=.025;
+  for(const x of[.025,len-.025])box(grille,x,bottom+.025,z,frame,top-bottom-.05,.025,M.dark);
+  for(const y of[bottom+.025,top-.05])box(grille,len/2,y,z,len-.025,frame,.025,M.dark);
+  const n=Math.ceil((len-.05)/.12);
+  for(let i=1;i<n;i++)box(grille,.025+(len-.05)*i/n,bottom+.05,z,.012,top-bottom-.10,.012,M.dark);
+  // Two side hinges indicate an opening security panel, rather than permanently sealing the window.
+  for(const y of[bottom+.2,top-.24])box(grille,.025,y,z,.045,.045,.045,M.dark);
+ }
+ if(curtains){
+  const set=group(g);set.name='Bo_rem_hai_ben_cua';
+  const railY=Math.min(top+.11,2.9),hem=bottom<.1?.06:Math.max(.15,bottom-.16),height=railY-.05-hem;
+  rod(set,[-.09,railY,inside*.18],[len+.09,railY,inside*.18],.012,M.dark);
+  const panel=Math.min(.28,len*.19),folds=7;
+  for(const side of[-1,1])for(let i=0;i<folds;i++){
+   const x=side<0?-.025+(i+.5)*panel/folds:len+.025-(i+.5)*panel/folds;
+   const pleat=box(set,x,hem,inside*(.18+(i%2)*.018),panel/folds+.006,height,.045,M.linen,.008);pleat.castShadow=false;
+  }
+ }
+ let floor=p;while(floor&&floor.userData.floor===undefined)floor=floor.parent;
+ glassParts.push({obj:g,floor:floor?.userData.floor,hideCut:true});
+ g.userData={security,curtains,width:len,bottom,top};return g;
+}
 export const entranceDoor={panels:[],open:false,progress:0,width:0};
-function facade(p,z,left=.45,right=5.25){if(p.userData.floor===0)[left,right]=entrySpan(z);wall(p,[left,z],[right,z],HEIGHT-UPPER.slabThickness,.16,[{start:.35,end:right-left-.35,bottom:0,top:2.7}],true);const glazing=windowOn(p,[left+.35,z],[right-.35,z],0,2.7);if(p.userData.floor===0){glazing.name='Cua_kinh_truot_vao_phong_khach';glassParts.find(part=>part.obj===glazing).hideCut=true;box(glazing,1.05,0,0,.04,2.7,.075,M.dark);box(glazing,.97,.95,-.055,.025,.28,.025,M.dark)}for(let x=left+.45;x<right-.3;x+=.09){const curtain=box(p,x,.08,z+.08,.045,2.55,.05,M.linen);curtain.castShadow=false;glassParts.push({obj:curtain,floor:p.userData.floor,hideCut:true});if(x>left+1)break}}
+function facade(p,z,left=.45,right=5.25){if(p.userData.floor===0)[left,right]=entrySpan(z);wall(p,[left,z],[right,z],HEIGHT-UPPER.slabThickness,.16,[{start:.35,end:right-left-.35,bottom:0,top:2.7}],true);const glazing=windowOn(p,[left+.35,z],[right-.35,z],0,2.7);if(p.userData.floor===0){glazing.name='Cua_kinh_truot_vao_phong_khach';glassParts.find(part=>part.obj===glazing).hideCut=true;box(glazing,1.05,0,0,.04,2.7,.075,M.dark);box(glazing,.97,.95,-.055,.025,.28,.025,M.dark)}}
+
 export function setEntranceProgress(progress){entranceDoor.progress=Math.max(0,Math.min(1,progress));for(const panel of entranceDoor.panels)panel.object.position.x=panel.closedX+panel.travel*entranceDoor.progress}
 function railing(p,a,b,h=1.05){const len=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.ceil(len/.13);for(let i=0;i<=n;i++){const t=i/n;rod(p,[a[0]+(b[0]-a[0])*t,0,a[1]+(b[1]-a[1])*t],[a[0]+(b[0]-a[0])*t,h,a[1]+(b[1]-a[1])*t],.012,M.dark)}rod(p,[a[0],h,a[1]],[b[0],h,b[1]],.024,M.dark)}
 export function plant(p,x,z,height=.95){const g=group(p,x,z);cyl(g,0,0,0,height*.16,height*.3,M.stone,height*.2);cyl(g,0,height*.3,0,height*.165,.02,M.soil);for(let i=0;i<9;i++){const a=i*2.3999,len=height*(.4+(i%3)*.12),bx=Math.cos(a)*height*.24,bz=Math.sin(a)*height*.24;rod(g,[0,height*.3,0],[bx,len,bz],.009,M.leaf);const leaf=new T.Mesh(new T.SphereGeometry(1,12,8),i%2?M.leaf:M.leaf2);leaf.scale.set(height*.1,height*.26,height*.035);leaf.position.set(bx,len+.07,bz);leaf.rotation.set(Math.sin(a)*.5,a,Math.cos(a)*.65);leaf.castShadow=true;g.add(leaf)}return g}
@@ -60,7 +95,7 @@ function livingRoom(p){const mirrored=group(p);mirrored.name='Phong_khach_sofa_t
  box(table,0,.315,0,LIVING.coffee.width,.055,LIVING.coffee.length,mat('#d8d1c4',.65,{map:stoneTex}),.12);
  box(table,-.05,.37,.18,.29,.025,.37,M.linen,.012);box(table,-.04,.397,.18,.27,.015,.35,M.sage,.008);
  cyl(table,.04,.37,-.24,.13,.018,M.dark);cyl(table,.04,.388,-.24,.065,.09,M.white);
- sectionalSofa(p);floorLamp(p,4.55,5.17);familyPortrait(p);
+ sectionalSofa(p);familyPortrait(p);
 }
 function waterDispenser(p,x,z,rotation=-Math.PI/2){
  const g=group(p,x,z,rotation);g.name='May_loc_nuoc_hai_voi_nong_lanh';g.userData={width:.32,depth:.36,height:1.34,bodyHeight:1.08,taps:2,tapStyle:'top-gooseneck'};
@@ -187,7 +222,6 @@ function serviceRooms(p){
   box(cab,0,.08,0,k.depth,.77,step-.009,M.oak,.01);
   box(cab,-k.depth/2-.012,.12,0,.024,.69,step-.024,M.linen,.008);
   for(const y of [.36,.61])box(cab,-k.depth/2-.027,y,0,.008,.007,step-.04,M.dark);
-  box(cab,k.depth/2-.012,.92,0,.016,.52,step-.004,M.stone);
  }
  // The return ends before the vestibule. A single L-shaped countertop has no overlapping corner.
  const rightJoin=frontX(returnFront),returnWidth=rightJoin-k.returnLeft,returnCount=3;
@@ -199,7 +233,9 @@ function serviceRooms(p){
  }
  const sideBreaks=[k.start,8.18,k.end];
  shapeSlab(kitchen,[...sideBreaks.map(z=>[backX(z),z]),[k.returnLeft,k.end],[k.returnLeft,returnFront],[frontX(returnFront),returnFront],[frontX(8.18),8.18],[frontX(k.start),k.start]],k.top,.04,stone);
- box(kitchen,(k.returnLeft+rightJoin)/2,.92,k.end-.008,returnWidth,.52,.016,M.stone);
+ // One continuous backsplash follows both wall slopes and turns across the full return.
+ const backsplash=shapeSlab(kitchen,[...sideBreaks.map(z=>[backX(z),z]),[k.returnLeft,k.end],[k.returnLeft,k.end-.016],[backX(k.end-.016)-.016,k.end-.016],[backX(8.18)-.016,8.18],[backX(k.start)-.016,k.start]],1.44,.52,M.stone);
+ backsplash.name='Op_tuong_bep_chu_L_lien_mach';
  // Induction hob on the long run, with a compact wall-mounted hood.
  const hobX=backX(k.hobZ)-k.depth/2;
  box(kitchen,hobX,.902,k.hobZ,.51,.013,.60,M.black,.02);
@@ -212,16 +248,10 @@ function serviceRooms(p){
  const curve=new T.CatmullRomCurve3([[0,.91,.23],[0,1.12,.23],[0,1.25,.19],[0,1.27,.05],[0,1.20,-.02]].map(v=>new T.Vector3(...v)));
  const faucet=new T.Mesh(new T.TubeGeometry(curve,28,.013,10,false),steel);faucet.castShadow=true;sink.add(faucet);
  rod(sink,[.08,.94,.23],[.14,1.02,.23],.01,steel);
- // Wall cabinets leave the hood clear and light the worktops underneath.
- for(const [z,width] of [[6.76,.46],[8.17,.58],[8.83,.58]]){
-  const x=backX(z)-.17;
-  box(kitchen,x,1.55,z,.34,.76,width,M.oak,.012);box(kitchen,x-.18,1.575,z,.018,.71,width-.03,M.linen,.006);
- }
- for(const x of [2.91,3.61,4.31]){box(kitchen,x,1.60,k.end-.165,.68,.75,.32,M.oak,.01);box(kitchen,x,1.625,k.end-.335,.65,.70,.018,M.linen,.006)}
- // A spice shelf, knife bar, utensil crock and preparation board keep the surfaces legible.
+ // No overhead cabinetry: keep spices on a small countertop tray.
  const spiceZ=6.8,spiceX=backX(spiceZ)-.14;
- box(kitchen,spiceX,1.20,spiceZ,.24,.025,.54,M.oak,.008);
- for(let i=0;i<4;i++){const zz=spiceZ-.18+i*.12;cyl(kitchen,spiceX,1.225,zz,.038,.12,mat(['#ad7651','#929975','#bfac82','#a78467'][i]));cyl(kitchen,spiceX,1.345,zz,.04,.018,M.dark)}
+ box(kitchen,spiceX,.943,spiceZ,.24,.02,.54,M.oak,.008);
+ for(let i=0;i<4;i++){const zz=spiceZ-.18+i*.12;cyl(kitchen,spiceX,.963,zz,.038,.12,mat(['#ad7651','#929975','#bfac82','#a78467'][i]));cyl(kitchen,spiceX,1.083,zz,.04,.018,M.dark)}
  const knifeZ=7.98,knifeX=backX(knifeZ)-.03;
  box(kitchen,knifeX,1.24,knifeZ,.025,.055,.42,M.dark,.006);
  for(let i=0;i<3;i++){const zz=knifeZ-.12+i*.12;box(kitchen,knifeX-.024,1.24,zz,.013,.16,.045,steel,.003);box(kitchen,knifeX-.025,1.12,zz,.018,.12,.027,M.oak,.004)}
@@ -256,7 +286,7 @@ function serviceRooms(p){
  bedroomSlidingDoor(g,r.entryX,r.bedDoorZ,.85,'Cua_truot_phong_ngu',Math.PI/2);slidingDoor(r.wcDoorX,r.wcStart,.75,'Cua_truot_WC_cuoi');
  const bedroom=group(g);bedroom.name='Phong_ngu_ben_phai';
  shapeSlab(bedroom,[[r.entryX+.05,r.start+.05],[right-.05,r.start+.05],[endSpan[1]-.05,r.end],[r.splitX+.05,r.end],[r.splitX+.05,r.wcStart+.05],[r.entryX+.05,r.wcStart+.05]],.01,.008,M.oak);
- for(const bed of REAR_FURNITURE.beds)singleBed(bedroom,bed.x,bed.z).rotation.y=bed.rotation;
+ for(const bed of REAR_FURNITURE.beds)singleBed(bedroom,bed.x,bed.z,bed.width).rotation.y=bed.rotation;
  const w=REAR_FURNITURE.wardrobe,closet=group(bedroom,w.x,w.z,w.rotation);closet.name='Tu_quan_ao_phong_ong_ba';
  box(closet,0,.035,0,w.width,w.height-.035,w.depth,M.oak,.018);
  for(const side of[-1,1]){box(closet,side*w.width/4,.075,-w.depth/2-.012,w.width/2-.014,w.height-.13,.024,M.linen,.01);box(closet,side*.045,.95,-w.depth/2-.03,.018,.3,.016,M.dark,.005)}
@@ -295,7 +325,6 @@ function sectionalSofa(p){
 }
 function sideTable(p,x,z){cyl(p,x,.42,z,.25,.055,M.oak);cyl(p,x,0,z,.045,.42,M.dark);cyl(p,x,0,z,.17,.025,M.dark);cyl(p,x,.475,z,.06,.12,M.white);}
 function coffee(p,x,z){const g=group(p,x,z);box(g,0,.34,0,1.1,.07,.65,M.oak,.12);for(const xx of[-.38,.38])for(const zz of[-.2,.2])box(g,xx,0,zz,.055,.34,.055,M.wood);box(g,-.18,.41,.08,.27,.025,.21,M.sage);cyl(g,.27,.41,-.1,.085,.12,M.stone);}
-function floorLamp(p,x,z){cyl(p,x,0,z,.19,.035,M.dark);rod(p,[x,.03,z],[x,1.5,z],.017,M.brass);cyl(p,x,1.42,z,.27,.3,M.linen,.16);cyl(p,x,1.42,z,.21,.012,M.glow);}
 function artwork(p,x,z,w=1){const g=group(p,x,z);box(g,0,1.32,0,w,.88,.045,M.oak);box(g,0,1.36,-.026,w-.08,.8,.015,M.linen);const arc=new T.Mesh(new T.CircleGeometry(.25,48,0,Math.PI),M.olive);arc.position.set(.05,1.7,-.038);g.add(arc);box(g,-.12,1.4,-.04,.16,.45,.008,M.stone);glassParts.push({obj:g,floor:p.userData.floor,hideCut:true});return g}
 function bed(p,x,z,w=1.6,nightstands=true){const g=group(p,x,z);g.name='Giuong_1600x2000';for(const xx of[-w/2+.15,w/2-.15])for(const zz of[-.8,.8])box(g,xx,.04,zz,.08,.16,.08,M.dark);box(g,0,.17,0,w+.12,.19,2.12,M.wood,.05);box(g,0,.36,0,w,.22,2,M.white,.09);box(g,0,.57,.26,w+.025,.07,1.4,M.linen,.045);box(g,0,.64,.65,w+.05,.045,.47,M.olive,.02);box(g,0,.18,-1.08,w+.22,1.02,.1,M.oak,.04);for(let i=-1;i<=1;i+=2){box(g,i*w*.24,.59,-.67,w*.42,.14,.43,M.white,.08)}if(nightstands)for(const xx of[-w/2-.33,w/2+.33]){box(g,xx,.05,-.73,.45,.39,.43,M.oak,.035);box(g,xx,.45,-.73,.42,.025,.42,M.stone);cyl(g,xx,.475,-.73,.065,.15,M.linen)}return g}
 function wardrobe(p,x,z,w=1.7,rot=0){const g=group(p,x,z,rot);box(g,0,0,0,w,2.55,.58,M.oak);for(let i=0;i<4;i++){box(g,-w/2+(i+.5)*w/4,.05,-.305,w/4-.012,2.46,.025,M.linen);box(g,-w/2+(i+.5)*w/4+.1,.9,-.332,.015,.45,.018,M.brass)}return g}
@@ -303,13 +332,13 @@ function desk(p,x,z,w=1.2,d=.5){box(p,x,.73,z,w,.055,d,M.oak,.02);for(const xx o
 function kitchen(p){const z=9.1;for(let i=0;i<4;i++){const zz=8.75+i*.4;box(p,.65,.04,zz,.65,.82,.38,M.oak);box(p,.65,.87,zz,.7,.055,.4,M.stone);box(p,1,.13,zz,.025,.67,.36,M.linen);box(p,1.025,.62,zz,.018,.02,.16,M.brass);box(p,.56,1.45,zz,.45,.65,.38,M.linen);box(p,.81,1.48,zz,.02,.59,.36,M.oak)}box(p,.81,.927,8.75,.36,.012,.42,M.dark,.05);box(p,.81,.93,8.75,.3,.012,.34,M.stone,.04);rod(p,[.51,.95,8.85],[.51,1.21,8.85],.018,M.brass);rod(p,[.51,1.21,8.85],[.74,1.21,8.85],.018,M.brass);box(p,.68,.925,9.55,.48,.01,.45,M.black);for(const zz of[9.41,9.68])for(const xx of[.54,.8])cyl(p,xx,.937,zz,.085,.009,M.dark);box(p,1.012,.2,9.55,.018,.49,.43,M.black);box(p,1.036,.62,9.55,.025,.02,.33,M.brass);box(p,4.8,0,7.5,.7,1.94,.68,M.white,.04);box(p,4.44,.04,7.5,.02,1.87,.61,M.stone);box(p,4.416,.35,7.72,.025,.5,.025,M.dark);box(p,1,.95,8.92,.025,.012,2.04,M.glow);}
 function dining(p,x,z){p=group(p,x,z,Math.PI/2);x=0;z=0;box(p,x,.73,z,1.45,.065,.8,M.oak,.07);for(const xx of[-.52,.52])for(const zz of[-.25,.25])box(p,x+xx,.04,z+zz,.055,.69,.055,M.wood);for(const side of[-1,1])for(const xx of[-.43,.43]){const g=group(p,x+xx,z+side*.7,side===1?0:Math.PI);box(g,0,.43,0,.4,.06,.4,M.olive,.04);box(g,0,.47,.16,.4,.35,.06,M.oak,.04);for(const a of[-.15,.15])for(const b of[-.15,.15])box(g,a,0,b,.035,.43,.035,M.wood)}cyl(p,x,.8,z,.065,.18,M.stone);}
 function bathroom(p){wall(p,[3.95,5],[3.95,7.35],3.08,.1,[{start:.18,end:.98,bottom:0,top:2.2}]);door(p,3.95,5.58,.8,Math.PI/2);wall(p,[3.95,7.35],[5.26,7.35]);box(p,4.6,.005,6.15,1.2,.02,2.24,M.stone);const g=group(p,4.7,6.75);box(g,0,.02,.18,.35,.4,.28,M.white,.06);const bowl=new T.Mesh(new T.SphereGeometry(1,24,12),M.white);bowl.scale.set(.22,.18,.32);bowl.position.set(0,.32,-.12);g.add(bowl);const seat=new T.Mesh(new T.TorusGeometry(.16,.025,12,36),M.white);seat.rotation.x=Math.PI/2;seat.scale.y=1.4;seat.position.set(0,.47,-.14);g.add(seat);box(p,4.84,.67,5.46,.64,.15,.43,M.oak,.04);box(p,4.84,.82,5.46,.57,.08,.37,M.white,.07);rod(p,[4.96,.9,5.58],[4.96,1.11,5.58],.014,M.brass);box(p,4.88,1.22,5.15,.62,.8,.035,M.glass);}
-function singleBed(p,x,z){const g=group(p,x,z,Math.PI);g.name='Giuong_don_1000x2000';box(g,0,.08,0,1.06,.23,2.02,M.oak,.04);box(g,0,.31,0,1,.21,2,M.white,.07);box(g,0,.52,.28,1.01,.045,1.4,M.linen,.035);box(g,0,.57,.65,1.02,.025,.48,M.olive,.02);box(g,0,.08,-1.035,1.08,.87,.07,M.oak,.035);box(g,0,.55,-.67,.65,.13,.4,M.white,.06);return g}
+function singleBed(p,x,z,width=1){const g=group(p,x,z,Math.PI);g.name=`Giuong_ong_ba_${Math.round(width*1000)}x2000`;g.userData={width,length:2,frameWidth:width+.08};box(g,0,.08,0,width+.06,.23,2.02,M.oak,.04);box(g,0,.31,0,width,.21,2,M.white,.07);box(g,0,.52,.28,width+.01,.045,1.4,M.linen,.035);box(g,0,.57,.65,width+.02,.025,.48,M.olive,.02);box(g,0,.08,-1.035,width+.08,.87,.07,M.oak,.035);for(const xx of[-width*.23,width*.23])box(g,xx,.55,-.67,width*.43,.13,.4,M.white,.06);return g}
 function scooter(p,x,z,color){const g=group(p,x,z);g.name='Xe_may_1850x680';const paint=mat(color,.32,{metalness:.18});for(const zz of[-.64,.64]){const tire=new T.Mesh(new T.TorusGeometry(.24,.065,12,32),M.dark);tire.rotation.y=Math.PI/2;tire.position.set(0,.3,zz);g.add(tire);const hub=new T.Mesh(new T.CylinderGeometry(.16,.16,.09,20),M.stone);hub.rotation.z=Math.PI/2;hub.position.copy(tire.position);g.add(hub)}box(g,0,.35,.16,.5,.36,1.05,paint,.13);box(g,0,.69,.16,.48,.09,.83,M.black,.08);box(g,0,.43,-.48,.45,.39,.26,paint,.07);rod(g,[0,.55,-.6],[0,1.01,-.61],.028,M.dark);rod(g,[-.34,1.01,-.61],[.34,1.01,-.61],.024,M.dark);box(g,0,.85,-.64,.26,.17,.12,M.white,.03);for(const side of[-1,1]){rod(g,[side*.26,1.01,-.61],[side*.29,1.16,-.65],.009,M.dark);const mirror=new T.Mesh(new T.SphereGeometry(1,12,8),M.dark);mirror.scale.set(.07,.045,.025);mirror.position.set(side*.29,1.16,-.65);g.add(mirror)}return g}
 function fitBox(obj,size){const box=new T.Box3().setFromObject(obj),actual=box.getSize(new T.Vector3());obj.scale.set(size[0]/actual.x,size[1]/actual.y,size[2]/actual.z);return obj}
 function human(p,x,z){const g=group(p,x,z);g.name='Nguoi_tham_chieu_1700mm';const skin=mat('#8d978a',.95);const head=new T.Mesh(new T.SphereGeometry(.1,20,16),skin);head.position.set(0,1.59,0);g.add(head);const torso=new T.Mesh(new T.CapsuleGeometry(.15,.28,6,16),skin);torso.position.set(0,1.15,0);g.add(torso);for(const side of[-1,1]){rod(g,[side*.085,.1,0],[side*.085,.94,0],.065,skin);rod(g,[side*.18,1.3,0],[side*.23,.87,.02],.045,skin);box(g,side*.085,0,-.04,.11,.09,.24,skin,.025)}fitBox(g,[HUMAN.shoulder,HUMAN.height,.26]);referencePeople.push(g);g.visible=true;return g}
 function frontGate(p,a,b){
  const len=Math.hypot(b[0]-a[0],b[1]-a[1]),g=group(p,a[0],a[1],-Math.atan2(b[1]-a[1],b[0]-a[0]));
- g.name='Cong_go_truot_san_hien';g.position.y=GROUND.porchLevel;
+ g.name='Cong_go_truot_san_hien';g.position.y=SITE.porchY;
  const w=len-.12,h=GROUND.securityHeight,panel=w/2;
  entranceDoor.group=g;entranceDoor.width=w;g.userData={height:h,interactive:'entrance-door',opening:w};
  for(const x of [.03,len-.03])box(g,x,0,0,.075,h,.09,M.dark);
@@ -388,12 +417,13 @@ function furnishSmallUpperRoom(p){
  const bowl=new T.Mesh(new T.SphereGeometry(1,32,20),M.white);bowl.scale.set(.22,.18,.31);bowl.position.set(0,.32,-.12);toilet.add(bowl);
  const seat=new T.Mesh(new T.TorusGeometry(.16,.023,12,48),M.white);seat.rotation.x=Math.PI/2;seat.scale.y=1.45;seat.position.set(0,.48,-.14);toilet.add(seat);
  box(toilet,0,.704,.22,.08,.006,.025,M.brass,.003);
- const vanity=group(bath,1.18,10.76);vanity.name='Lavabo_WC_phong_nho';
- box(vanity,0,.36,0,.62,.39,.4,M.oak,.018);box(vanity,0,.76,0,.65,.045,.43,M.stone,.015);
+ const V=S.vanity,vanity=group(bath,V.x,V.z);vanity.name='Lavabo_WC_phong_nho';
+ // Keep the full doorway approach clear, with the basin tucked towards the opposite wall.
+ box(vanity,0,.36,0,V.width-.03,.39,V.depth-.03,M.oak,.018);box(vanity,0,.76,0,V.width,.045,V.depth,M.stone,.015);
  const sink=new T.Mesh(new T.TorusGeometry(.135,.025,12,48),M.white);sink.rotation.x=Math.PI/2;sink.scale.x=1.25;sink.position.set(0,.825,0);vanity.add(sink);
  cyl(vanity,0,.79,0,.13,.025,M.white);rod(vanity,[.2,.81,-.12],[.2,1.03,-.12],.012,M.dark);rod(vanity,[.2,1.03,-.12],[.07,1.03,-.12],.012,M.dark);
- const mirror=new T.Mesh(new T.CircleGeometry(.25,64),mat('#b7c6c3',.12,{metalness:.85}));mirror.position.set(1.18,1.46,10.51);bath.add(mirror);
- box(bath,1.18,1.88,10.52,.42,.025,.045,M.glow,.01);
+ const mirror=new T.Mesh(new T.CircleGeometry(.25,64),mat('#b7c6c3',.12,{metalness:.85}));mirror.position.set(V.x,1.46,b.front+.06);bath.add(mirror);
+ box(bath,V.x,1.88,b.front+.07,.42,.025,.045,M.glow,.01);
  const sleeping=group(room);sleeping.name='Giuong_tu_va_ban_phong_nho';
  const B=S.bed;
  const frame=bed(sleeping,B.x,B.z,B.width,false);frame.rotation.y=B.rotation;frame.name='Giuong_phong_nho_1400x2000';
@@ -406,11 +436,18 @@ function furnishSmallUpperRoom(p){
 
 function furnishMasterSuite(p){
  const S=MASTER_SUITE,b=S.bath,g=group(p);g.name='Tang2_Master_noi_that';g.userData.floor=1;
- // Keep enlarged footprint; return to walk-in shower and place the WC door towards wardrobes.
+ // Wet room is enclosed; the separate dry vanity niche opens into the master bedroom.
  const bath=group(g);bath.name='WC_master_mo_rong_co_sen';bath.userData.floor=1;
  wall(bath,[b.left,b.front],[b.right,b.front],HEIGHT-UPPER.slabThickness,.1);
  wall(bath,[b.right,b.front],[b.right,b.back],HEIGHT-UPPER.slabThickness,.1,[{start:b.doorStart-b.front,end:b.doorStart+b.doorWidth-b.front,bottom:0,top:2.28}]);
  bedroomSlidingDoor(bath,b.right,b.doorStart+b.doorWidth/2,b.doorWidth,'Cua_lua_WC_master',Math.PI/2);
+ const dry=group(g);dry.name='Khu_kho_lavabo_ngoai_WC_master';dry.userData={...S.washbasin.niche,outsideWC:true};
+ const N=S.washbasin.niche;
+ wall(dry,[b.right,b.front],[N.right,b.front],HEIGHT-UPPER.slabThickness,.1);
+ // Extend only the short back return; the existing master boundary supplies the rest.
+ wall(dry,[3.15,5.3],[N.right,5.3],HEIGHT-UPPER.slabThickness,.1);
+ shapeSlab(dry,[[N.left,N.front],[N.right,N.front],[N.right,N.back],[N.left,N.back]],.02,.018,M.stone);
+
  shapeSlab(bath,[[b.left,b.front+.05],[b.right-.05,b.front+.05],[b.right-.05,b.back],[b.left,b.back]],.018,.018,mat('#c3c9c1',.9));
  const Q=S.shower,shower=group(bath);shower.name='Khu_tam_dung_master';
  box(shower,(Q.left+Q.right)/2,.02,(Q.front+Q.back)/2,Q.right-Q.left,.025,Q.back-Q.front,M.stone,.02);
@@ -422,13 +459,13 @@ function furnishMasterSuite(p){
  const toilet=group(bath,1.7,4.83);toilet.name='Bon_cau_master';box(toilet,0,.03,.2,.35,.65,.18,M.white,.04);
  const bowl=new T.Mesh(new T.SphereGeometry(1,32,20),M.white);bowl.scale.set(.21,.17,.3);bowl.position.set(0,.32,-.12);toilet.add(bowl);
  const seat=new T.Mesh(new T.TorusGeometry(.15,.023,12,40),M.white);seat.rotation.x=Math.PI/2;seat.scale.y=1.4;seat.position.set(0,.47,-.14);toilet.add(seat);
- const V=S.washbasin,vanity=group(bath,V.x,V.z,Math.PI);vanity.name='Lavabo_master_1100x450';
+ const V=S.washbasin,vanity=group(dry,V.x,V.z);vanity.name='Lavabo_master_ngoai_WC_1100x450';
  box(vanity,0,.34,0,V.length,.42,V.depth,M.oak,.02);box(vanity,0,.77,0,V.length+.02,.045,V.depth+.02,M.stone,.015);
  for(const x of[-.265,.265])box(vanity,x,.38,-V.depth/2-.012,.51,.33,.02,M.linen,.008);
  const basin=new T.Mesh(new T.TorusGeometry(.16,.028,16,64),M.white);basin.rotation.x=Math.PI/2;basin.scale.x=1.7;basin.position.set(0,.85,-.015);vanity.add(basin);
  const bottom=cyl(vanity,0,.81,-.015,.15,.025,M.white);bottom.scale.x=1.6;
  rod(vanity,[.36,.815,.14],[.36,1.04,.14],.012,M.dark);rod(vanity,[.36,1.04,.14],[.14,1.04,.14],.012,M.dark);
- box(bath,V.x,1.05,3.72,1.04,.85,.012,mat('#afbfbc',.12,{metalness:.85}),.005);box(bath,V.x,1.97,3.74,.85,.025,.045,M.glow,.008);
+ const mirror=box(dry,V.x,1.05,V.z+V.depth/2-.014,1.04,.85,.012,mat('#afbfbc',.12,{metalness:.85}),.005);mirror.name='Guong_lavabo_khu_kho_master';glassParts.push({obj:mirror,floor:1,hideCut:true});
  // Headboard on the left; the screen faces the foot of the bed across the open aisle.
  const B=S.bed,masterBed=bed(g,B.x,B.z,B.width,false);masterBed.rotation.y=B.rotation;masterBed.name='Giuong_master_1800x2000';
  for(const z of S.nightstands.zs){
@@ -479,7 +516,7 @@ function perimeter(p,index){
     const splitX=MIRROR_X-MASTER_SUITE.balcony.splitX,t=(splitX-a[0])/(b[0]-a[0]),cut=[splitX,a[1]+t*(b[1]-a[1])];
     const length=Math.hypot(cut[0]-a[0],cut[1]-a[1]),vx=(cut[0]-a[0])/length,vz=(cut[1]-a[1])/length;
     wall(p,a,cut,HEIGHT-UPPER.slabThickness,.18,[{start:.4,end:2.48,bottom:.95,top:2.55}],true);
-    windowOn(p,[a[0]+vx*.4,a[1]+vz*.4],[a[0]+vx*2.48,a[1]+vz*2.48],.95,2.55);
+    windowOn(p,[a[0]+vx*.4,a[1]+vz*.4],[a[0]+vx*2.48,a[1]+vz*2.48],.95,2.55,true,{security:false});
     openingAudit.push({floor:1,kind:'window',side:'front',zone:'master-pc'});railing(p,cut,b);
    }else railing(p,a,b);continue;
   }
@@ -543,6 +580,21 @@ for(let index=0;index<1;index++){
    for(const y of[.06,.29,.52,.75])box(shoes,0,y,0,.8,.025,.28,M.oak,.008);
    for(const x of[-.385,.385])box(shoes,x,.06,0,.03,.7,.28,M.oak,.008);
    for(const x of[-.22,.15])for(const side of[-.045,.045])box(shoes,x+side,.32,-.015,.065,.045,.2,M.linen,.02);
+   // Slim wet-coat stand beside the shoe rack; all fittings clear the parking and entry steps.
+   const hooks=group(p,4.80,1.0);hooks.name='Moc_mu_bao_hiem_va_ao_mua';hooks.position.y=GROUND.porchLevel;
+   box(hooks,0,.02,0,.27,.025,.34,M.dark,.015); // drip tray, not a raised parking surface
+   rod(hooks,[0,.045,0],[0,1.78,0],.018,M.dark);
+   for(const y of[1.48,1.72])for(const sign of[-1,1]){
+    rod(hooks,[0,y-.08,0],[sign*.13,y,.035],.013,M.dark);
+    cyl(hooks,sign*.13,y-.015,.035,.022,.03,M.oak);
+   }
+   // Two wall-mounted helmet hooks with gently curved tips, over the shoe rack.
+   const rail=group(p,entrySpan(1.65)[1]-.012,1.65,-Math.PI/2);rail.name='Thanh_treo_mu_bao_hiem_2_moc';rail.position.y=GROUND.porchLevel;
+   box(rail,0,1.48,0,.68,.075,.028,M.oak,.012);
+   for(const x of[-.21,.21]){
+    rod(rail,[x,1.49,0],[x,1.49,.10],.012,M.dark);
+    rod(rail,[x,1.49,.10],[x,1.55,.12],.012,M.dark);
+   }
    securityCamera({parent:p,position:[entrySpan(2.13)[1]-.12,2.65,2.13],target:[2.5,.5,.2],mountRotation:Math.PI/2,name:'Camera_goc_hien',box,cyl,rod,group,M});
    securityCamera({parent:p,position:[2.11,2.65,10.35],target:[3.9,.8,12],mountRotation:-Math.PI/2,name:'Camera_phong_ong_ba',box,cyl,rod,group,M});
    livingRoom(p);lStair(p,{arrivalRail:false,frontGuard:true});serviceRooms(p);

@@ -1,3 +1,5 @@
+import {createTerraceCanopy} from './terrace-canopy.js';
+export let terraceCanopy;
 import {addRoofUtilities} from './exterior-upgrades.js';
 import {trailingPlanters} from './trailing-garden.js';
 import * as T from 'three';
@@ -94,6 +96,7 @@ export function buildThirdFloor(H){
   greenSegments.push([clip(a),clip(b)]);
  }
  trailingPlanters({parent:garden,segments:greenSegments,center:[2.7,3],box,rod,group,M,clearances:BEDROOM_AC.map(s=>({minX:4.5,z:s.outdoor.z,halfWidth:s.outdoor.width/2+.15,maxDrop:1.05}))});
+ terraceCanopy=createTerraceCanopy({parent:p,box,M});
  // Covered laundry bay, with two full-size front-loading appliances facing into the yard.
  const L=THIRD.laundry,laundry=group(p);laundry.name='San_sau_giat_say';
  for(const appliance of L.machines){

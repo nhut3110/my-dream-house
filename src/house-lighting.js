@@ -75,7 +75,7 @@ export function createHouseLighting({house,floors,scene}){
  let view='all',nightMix=0;
  function update(){
   const active=LIGHTING_PLAN.filter(s=>s.primary&&(view==='all'||+view===s.floor)).toSorted((a,b)=>view==='all'?(b.allPriority||0)-(a.allPriority||0):(b.priority||0)-(a.priority||0)).slice(0,slots.length);
-  slots.forEach((light,i)=>{const s=active[i];if(!s){light.intensity=0;return}light.position.set(MIRROR_X-s.x,HEIGHT*s.floor+s.y-(s.kind==='ceiling'?.25:0),s.z);light.color.set(s.kelvin>=3500?'#ffe5c5':'#ffd5a0');light.intensity=nightMix*(s.power??(s.kind==='wall'?22:62));light.distance=s.range??(s.kind==='wall'?4.1:5.1);});
+  slots.forEach((light,i)=>{const s=active[i];if(!s){light.intensity=0;return}const offset=s.kind==='wall'?.22:0;light.position.set(MIRROR_X-s.x-Math.sin(s.rotation||0)*offset,HEIGHT*s.floor+s.y-(s.kind==='ceiling'?.25:0),s.z+Math.cos(s.rotation||0)*offset);light.color.set(s.kelvin>=3500?'#ffe5c5':'#ffd5a0');light.intensity=nightMix*(s.power??(s.kind==='wall'?22:62));light.distance=s.range??(s.kind==='wall'?4.1:5.1);});
   glow.emissiveIntensity=.05+nightMix*1.8;washMaterial.opacity=nightMix*.72;poolMaterial.opacity=nightMix*.36;
  }
  return {plan:LIGHTING_PLAN,fixtures,slots,setView(mode,lowWalls=false){view=mode;ceilingBatches.forEach(b=>b.mesh.material=mode==='all'?b.solid:b.ghost);wallWashes.forEach(m=>m.visible=!lowWalls);update()},setMix(value){nightMix=value;update()},stats:()=>({fixtures:fixtures.length,view,nightMix,activeLights:slots.filter(l=>l.intensity>0).length,lightBudget:slots.length,address:'356/73 Hoàng Diệu'})};
