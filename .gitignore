@@ -16,3 +16,6 @@ plans/*
 !plans/plot-to-scale.png
 !plans/kich-thuoc-doc-tu-anh.csv
 scripts/extract-plot.mjs
+
+# Generated drawing exports
+output/

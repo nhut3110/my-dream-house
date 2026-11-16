@@ -16,7 +16,7 @@ assert.equal(HUMAN.height,1.7);
 assert.equal(GROUND.sofa.length,2.3);
 assert.ok(LIVING.coffee.x+LIVING.coffee.width/2<GROUND.sofa.x-.6,'Coffee table leaves room before sofa');
 const source=fs.readFileSync(new URL('../src/house.js',import.meta.url),'utf8');
-assert.equal(STAIR.type,'L');assert.equal(STAIR.firstRisers,5);assert.equal(STAIR.firstRisers+STAIR.secondRisers,STAIR.risers);assert.ok(Math.abs(STAIR.risers*STAIR.rise-HEIGHT)<1e-9);assert.ok(STAIR.z>GROUND.tv.z+1.2+.4,'Stair clears rear of 2.4 m TV panel by at least 400 mm');
+assert.equal(STAIR.type,'L');assert.equal(STAIR.firstRisers,5);assert.equal(STAIR.firstRisers+STAIR.secondRisers,STAIR.risers);assert.ok(Math.abs(STAIR.risers*STAIR.rise-HEIGHT)<1e-9);assert.ok(STAIR.z>GROUND.tv.z+GROUND.tv.panelLength/2+.4,'Stair clears rear of resized TV panel by at least 400 mm');
 assert.ok(!source.includes('underStairWC('),'No under-stair WC in current iteration');
 assert.ok(source.includes('index<1'),'Ground-floor furnishings are not duplicated across storeys');
 assert.ok(toWorld([GROUND.sofa.x,0])[0]<toWorld([GROUND.tv.x,0])[0],'Sofa right and TV left from yard');
@@ -32,7 +32,7 @@ const cookingFace=entrySpan(d.z)[1]-.10-k.depth;
 assert.ok(cookingFace-(d.x+d.length/2)>.8,'Corner trial cooking aisle exceeds .8 m');
 assert.ok((d.x-d.length/2)-1.195>.7,'Left storage aisle exceeds .7 m');
 assert.ok(k.start>GROUND.exit.z+GROUND.exit.width/2+.25,'Kitchen starts behind relocated living-room exit');
-assert.ok(r.splitX<2&&r.bedDoorX===r.entryX,'Bedroom door is in shared left side partition');assert.ok(r.bedDoorZ-.425>r.start&&r.bedDoorZ+.425<r.wcStart,'Both doors meet the shared vestibule');assert.ok(!GROUND.rightWindows.some(w=>w.z<5),'No window behind TV');assert.ok(f.width>.9&&f.height<1.9,'Side-by-side fridge envelope');assert.ok(GROUND.exit.z-GROUND.exit.width/2>GROUND.tv.z+1.2+.2,'Exit clears the rear end of the TV wall panel');
+assert.ok(r.splitX<2&&r.bedDoorX===r.entryX,'Bedroom door is in shared left side partition');assert.ok(r.bedDoorZ-.425>r.start&&r.bedDoorZ+.425<r.wcStart,'Both doors meet the shared vestibule');assert.ok(!GROUND.rightWindows.some(w=>w.z<5),'No window behind TV');assert.ok(f.width>.9&&f.height<1.9,'Side-by-side fridge envelope');assert.ok(GROUND.exit.z-GROUND.exit.width/2>GROUND.tv.z+GROUND.tv.panelLength/2+.2,'Exit clears the rear end of the TV wall panel');
 assert.ok(f.x+f.depth/2<r.entryX-.7,'Fridge remains beside, not inside, the expanded bedroom');
 assert.ok(f.z+f.width/2<r.bedDoorZ-.425-.2,'Fridge clears approach to bedroom doorway');
 assert.ok(d.z+d.length/2<r.start-.9,'Access before rear room doors');
@@ -77,12 +77,11 @@ const M=MASTER_SUITE;
 assert.ok(M.bath.front-.05-(M.bed.z+(M.bed.width+.22)/2)>.08,'Master headboard clears WC partition');
 assert.ok(M.bed.z-(M.bed.width+.12)/2-(M.pc.chairZ+.235)>=.6-1e-9,'Tucked PC chair leaves .6 m beside bed');
 assert.ok(M.tv.x-M.tv.depth/2-(M.bed.x+1.13)>=.9,'Master bed foot aisle exceeds .9 m');
-assert.ok(M.endWardrobe.z-M.endWardrobe.depth/2-(M.wardrobe.z+M.wardrobe.width/2)>.04,'L-shaped cabinets meet without overlap');
 assert.ok(M.bath.doorStart>M.bath.front&&M.bath.doorStart+M.bath.doorWidth<M.bath.back,'WC master door fits wardrobe-facing partition');
-assert.ok(MASTER_BALCONY.every(p=>p[0]>=M.balcony.splitX-1e-9&&p[1]<=M.balcony.depth+1e-9),'Balcony only occupies right third');
+assert.ok(MASTER_BALCONY.every(p=>p[0]>=M.balcony.splitX-1e-9&&p[1]<=M.balcony.depth+1e-9),'Balcony remains inside its enlarged front footprint');
 const balconyFraction=(entrySpan(M.balcony.depth)[1]-M.balcony.splitX)/(entrySpan(M.balcony.depth)[1]-entrySpan(M.balcony.depth)[0]);
-assert.equal(M.balcony.splitX,UPPER_LAYOUT.masterBoundary[2][0],'Master balcony divider aligned with entrance wall');
-assert.ok(balconyFraction>.37&&balconyFraction<.4,'Master balcony widened without taking over PC desk');
+assert.ok(M.balcony.splitX-.06-(M.pc.x+M.pc.width/2)>=.25,'Widened balcony partition retains at least 250 mm beside PC desk');
+assert.ok(balconyFraction>.46&&balconyFraction<.50,'Master balcony widened without taking over PC desk');
 console.log('PASS: master WC/bed/PC chair/wardrobe clearances and reduced balcony.');
 
 assert.equal(M.tv.z,M.bed.z,'TV centered on master bed axis');
@@ -90,7 +89,6 @@ assert.ok(M.commonWindow.z-M.commonWindow.width/2>UPPER_LAYOUT.masterBoundary.at
 assert.ok(M.commonWindow.z+M.commonWindow.width/2<plot[4][1]-.05,'Common window stays on one straight wall before the facade corner');
 assert.ok(M.commonWindow.z+M.commonWindow.width/2<UPPER_LAYOUT.smallBoundary.at(-1)[1]-.05,'Common window clears small-room partition');
 assert.ok(M.ventilationWindow.z+M.ventilationWindow.width/2<M.wardrobe.z-M.wardrobe.width/2,'Master ventilation window clears wardrobe');
-assert.ok(M.endWardrobe.z+M.endWardrobe.depth/2<UPPER_LAYOUT.masterBoundary.at(-1)[1]-.04,'Back wardrobe fits moved wall');
 console.log('PASS: wider common area, aligned TV and two new right-side windows.');
 
 assert.equal(M.bath.doorAxis,'right');
@@ -479,7 +477,7 @@ for(let i=1;i<approach.length;i++)for(let j=0;j<=20;j++){
   const q=fanPoint(radius,a);assert.ok(Math.hypot(p[0]-q[0],p[1]-q[1])>.272,'500 mm person clears both curved handrails on approach');
  }
 }
-assert.ok(fanMinZ-(GROUND.tv.z+1.2)>.15,'Curved stair and left TV panel have a physical gap, measured from real fan footprint');
+assert.ok(fanMinZ-(GROUND.tv.z+GROUND.tv.panelLength/2)>.15,'Curved stair and left TV panel have a physical gap, measured from real fan footprint');
 assert.ok(entrySpan(d.z)[1]-.09-SERVICE.kitchen.depth-(d.x+d.length/2)>.80,'Corner trial retains over 800 mm beside kitchen');
 console.log('PASS: swapped living room, real TV/fan separation, 500 mm stair approach and kitchen aisle.');
 
@@ -556,6 +554,51 @@ assert.equal(masterGuardPath.at(-1)[1],M.balcony.depth,'Guard returns all the wa
 const entryFrontLamp=LIGHTING_PLAN.find(l=>l.floor===0&&l.zone==='front-facade');
 assert.equal(entryFrontLamp.kind,'ceiling','Front entrance uses a soffit downlight instead of a wall sconce');
 const masterFrontLamp=LIGHTING_PLAN.find(l=>l.floor===1&&l.zone==='front-facade');
-assert.ok(masterFrontLamp.x+.095<3.04&&masterFrontLamp.x-.095>2.745,'Master front lamp fits inside the timber-backed strip');
+assert.ok(Math.abs(masterFrontLamp.x-(M.frontWindow.centers[0]+M.frontWindow.centers[1])/2)<1e-9,'Master lamp is centred between both arches');
+assert.ok(masterFrontLamp.x-.095>M.frontWindow.centers[0]+M.frontWindow.width/2+.065&&masterFrontLamp.x+.095<M.frontWindow.centers[1]-M.frontWindow.width/2-.065,'Lamp clears both arched window frames');
 assert.ok(Math.abs(ADDRESS_MOUNT.lightZ-tileFace)<.002,'Address lamp mounting plate meets the finished wall');
 console.log('PASS: continuous master balcony guard and supported facade/address fixture locations.');
+
+const {DOMESTIC_ALTARS:DA}=await import('../src/domestic-altars.js');
+const A=DA.earth,Tao=DA.kitchen;
+assert.ok(A.z-A.width/2>GROUND.glassLine+.4,'Low shrine clears entry threshold');
+assert.ok(LIVING.aisle.maxX-(A.x+(A.depth+.035)/2)>=1.2,'Shrine leaves at least 1.2 m passage on its right');
+assert.ok(A.z+(A.width+.025)/2<fanMinZ-.05,'Shrine canopy clears the curved stair and rail');
+assert.ok(A.z-(A.width+.025)/2>GROUND.tv.z+GROUND.tv.cabinetLength/2,'Shrine clears TV credenza');
+assert.ok(Tao.x+Tao.width/2+.025<SERVICE.kitchen.sinkX-.32,'Shelf is beside the sink, not over the bowl');
+assert.ok(Tao.shelfY-.22>1.27+.5,'Shelf brackets clear faucet height');
+assert.ok(Tao.z-Tao.depth/2>SERVICE.kitchen.hobZ+.34,'Kitchen shrine does not overlap cooking hood');
+assert.ok(Math.abs(Tao.z+Tao.depth/2-SERVICE.kitchen.end)<1e-8,'Shelf backing meets tiled return wall');
+assert.ok(SMALL_SUITE.wardrobe.x-SMALL_SUITE.wardrobe.width/2>3.45,'Small wardrobe stays behind room wall and out of shared landing');
+assert.ok(Tao.shelfY+Tao.height<HEIGHT-UPPER.slabThickness-.5,'Shelf leaves overhead space');
+console.log('PASS: domestic altars clear entrance, TV, stairs, escape door, hob/hood and sink.');
+
+// New arched facade: dimensions, glazing contour and gate lintels remain buildable in the concept.
+const {archShape,archSpandrels,GATE_ARCHES}=await import('../src/arched-openings.js');
+assert.ok(Math.abs(M.frontWindow.width-2.08/3)<1e-9,'Front window reduced to one third of its former width');
+assert.ok(M.frontWindow.x+M.frontWindow.width/2+.15<M.balcony.splitX,'Arched window clears the enlarged balcony divider');
+assert.ok(M.balcony.splitX-.06-(M.bed.x+1.13)>=.10,'Balcony return does not intersect the bed');
+const arcGroup=new THREE.Group();archSpandrels(arcGroup,M.frontWindow.width,M.frontWindow.head,.18,new THREE.MeshBasicMaterial());
+for(const mesh of arcGroup.children){
+ const p=mesh.geometry.attributes.position,r=M.frontWindow.width/2,spring=M.frontWindow.head-r;
+ for(let i=0;i<p.count;i++)assert.ok(Math.hypot(p.getX(i),p.getY(i)-spring)>=r-.001,'Arch corner masonry stays outside glazed semicircle');
+}
+for(const w of GATE_ARCHES){
+ assert.ok(w.x-w.width/2>.46+GROUND.gateOpening+.15,'Arched grille stays off the sliding gate');
+ assert.ok(w.x+w.width/2<4.84,'Arched grille stays off the curved corner');
+ assert.ok(w.top+.15<GROUND.securityHeight+GROUND.porchLevel,'Gate arch retains a solid lintel above');
+}
+console.log('PASS: one-third arched window, widened balcony furniture clearance and arched gate lintels.');
+
+assert.equal(M.frontWindow.centers.length,2,'Master facade has two narrow arched windows');
+const centers=M.frontWindow.centers;
+assert.ok(centers[0]-M.frontWindow.width/2>.15,'First arched window retains a solid outer jamb');
+assert.ok(centers[1]-centers[0]-M.frontWindow.width>.25,'Paired arches retain a solid pier between them');
+assert.ok(centers[1]+M.frontWindow.width/2+.065<M.balcony.splitX-.15,'Second arch and frame clear balcony divider');
+console.log('PASS: paired master arches retain outer jamb, middle pier and balcony clearance.');
+
+assert.ok(Math.abs(DA.earth.x-DA.earth.depth/2-entrySpan(DA.earth.z)[0]-.025)<1e-9,'Earth shrine back sits 25 mm from the living room wall');
+assert.ok(DA.earth.z-DA.earth.width/2>GROUND.tv.z+GROUND.tv.panelLength/2+.10,'Moved TV panel retains a separate shrine bay');
+console.log('PASS: moved TV and wall-backed shrine retain a separate bay.');
+
+assert.equal(DA.earth.rotation,-Math.PI/2,'Shrine back faces the side wall and front faces the living room');

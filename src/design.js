@@ -12,7 +12,7 @@ export const levels=[
 export const assumptions={units:'metres',externalWall:.18,internalWall:.1,floorToFloor:HEIGHT,stair:STAIR,style:'Contemporary Japandi / warm oak, mineral plaster, olive linen',entry:'Front recessed corner',source:'../plans/plot-geometry.json',stage:'Concept design, not construction drawings'};
 
 // Updated ground-floor brief. Coordinates are metres, right/left are from the gate looking in.
-export const GROUND={glassLine:2.3,porchLevel:-.3,stepRise:.15,stepTread:.3,gateEdge:0,gateOpening:2.4,securityHeight:2.2,sofa:{x:4.5,z:3.65,length:2.3,depth:.92,chaiseDepth:1.62},tv:{x:.5,z:3.7},rightWindows:[{z:11.65,width:1.8,sill:1.1,head:2.5}],exit:{z:5.65,width:.95},bedroomStart:9.20,beds:[{x:1.25,z:11.85,width:1,length:2},{x:3.75,z:11.85,width:1,length:2}],wc:{x1:.35,x2:1.35,z1:6.65,z2:8.18},parking:[{x:1.14,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:2.27,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:3.4,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132}],closedSides:['left','rear']};
+export const GROUND={glassLine:2.3,porchLevel:-.3,stepRise:.15,stepTread:.3,gateEdge:0,gateOpening:2.4,securityHeight:2.2,sofa:{x:4.5,z:3.65,length:2.3,depth:.92,chaiseDepth:1.62},tv:{x:.5,z:3.45,panelLength:1.6,cabinetLength:1.5},rightWindows:[{z:11.65,width:1.8,sill:1.1,head:2.5}],exit:{z:5.65,width:.95},bedroomStart:9.20,beds:[{x:1.25,z:11.85,width:1,length:2},{x:3.75,z:11.85,width:1,length:2}],wc:{x1:.35,x2:1.35,z1:6.65,z2:8.18},parking:[{x:1.14,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:2.27,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132},{x:3.4,z:1.04,angle:Math.PI/4,length:1.844,width:.714,height:1.132}],closedSides:['left','rear']};
 
 export const HUMAN={height:1.7,eye:1.58,shoulder:.46};
 export const HONDA_SOURCE='https://www.honda.com.vn/xe-may/san-pham/lead-abs';
@@ -58,7 +58,7 @@ export const SMALL_SUITE={
  bath:{left:.24,right:1.74,front:10.45,back:13.08,doorStart:10.78,doorWidth:.75},
  vanity:{x:.64,z:10.76,width:.65,depth:.43},
  bed:{x:3.15,z:11.88,width:1.4,length:2,rotation:Math.PI},
- wardrobe:{x:4.15,z:9.59,width:1.9,depth:.58,height:2.55},
+ wardrobe:{x:4.28,z:9.59,width:1.6,depth:.58,height:2.55},
  desk:{x:4.96,z:10.38,width:.72,depth:.4},
  window:{z:10.38,width:.7,sill:1.1,head:2.4},
  balcony:{innerX:4.57,front:11.05,back:12.85,doorStart:11.43,doorWidth:.86},
@@ -69,11 +69,11 @@ UPPER_LAYOUT.smallPolygon=[[entrySpan(10.4)[0],10.4],[2.18,10.4],[3.4,10.4],[3.4
 export const SMALL_BALCONY=[[SB.innerX,SB.front],[entrySpan(SB.front)[1],SB.front],[entrySpan(SB.back)[1],SB.back],[SB.innerX,SB.back]];
 
 export const MASTER_SUITE={
- balcony:{splitX:3.15,depth:1.45},
+ balcony:{splitX:2.65,depth:1.45},
+ frontWindow:{x:1.36,centers:[.755,2.015],width:2.08/3,sill:.65,head:2.95},
  bath:{left:.22,right:2.2,front:3.65,back:5.25,doorStart:3.73,doorWidth:.75,doorAxis:"right"},
  bed:{x:1.34,z:2.36,width:1.8,length:2,rotation:Math.PI/2},
  pc:{x:1.36,z:.43,width:1.85,depth:.6,chairZ:.565},
- endWardrobe:{x:4.3,z:6.46,width:1.8,depth:.58,height:2.55},
  shower:{left:.27,right:1.27,front:3.72,back:5.18},
  nightstands:{x:.55,zs:[1.26,3.46],width:.26,depth:.34,height:.47},
  washbasin:{x:2.87,z:5.025,length:1.1,depth:.45,outside:true,niche:{left:2.25,right:3.5,front:3.7,back:5.25}},

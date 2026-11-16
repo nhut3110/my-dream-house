@@ -10,7 +10,7 @@ import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {house,floors,labels,assetState,loadFurniture,setHouseView,buildDimensions,box,M,referencePeople,openingAudit,entranceDoor,setEntranceProgress} from './house.js';
-import {levels,plot,HEIGHT,assumptions} from './design.js';
+import {levels,plot,HEIGHT,assumptions,MIRROR_X,STAIR} from './design.js';
 const stage=document.querySelector('#stage'),viewport=document.querySelector('#viewport');
 const touchDevice=matchMedia('(any-pointer:coarse)').matches||navigator.maxTouchPoints>0||/Android|iPhone|iPad/.test(navigator.userAgent)||innerWidth<850;
 document.documentElement.classList.toggle('touch-device',touchDevice);
@@ -19,6 +19,35 @@ const measureButton=document.createElement('button');measureButton.id='room-meas
 function closeRoomPlan(){roomPlan.hidden=true;measureButton.setAttribute('aria-pressed','false')}
 measureButton.onclick=()=>{const show=roomPlan.hidden;roomPlan.hidden=!show;measureButton.setAttribute('aria-pressed',String(show));};
 for(const id of ['plan','dollhouse','overview','entry'])document.querySelector('#'+id).addEventListener('click',closeRoomPlan);
+
+const technicalButton=document.createElement('button');technicalButton.id='technical-export';technicalButton.textContent='Xuất bản vẽ';document.querySelector('#export').after(technicalButton);
+technicalButton.onclick=async()=>{
+ const preview=window.open('','_blank');
+ if(!preview){toast('Cho phép mở cửa sổ để xem bản vẽ');return;}
+ preview.document.body.textContent='Đang dựng bộ bản vẽ…';technicalButton.disabled=true;
+ const visibility=[];house.traverse(o=>visibility.push([o,o.visible]));
+ const siteVisible=site.root.visible,dimensionsVisible=dimensions.visible,previousMix=lightingMix;
+ let drawingRenderer;
+ try{
+  const {sliceModel,createDrawingSet,elevationSheet,openDrawingViewer}=await import('./technical-drawings.js');
+  setHouseView('all',false);site.root.visible=false;dimensions.visible=false;referencePeople.forEach(p=>p.visible=false);applyLighting(0);
+  // Yield once so the loading message is painted before mesh intersections.
+  await new Promise(resolve=>setTimeout(resolve,30));
+  const plans=[0,1,2].map(f=>sliceModel(house,1,f*HEIGHT+1.1));
+  const underlays=[0,1,2].map(f=>sliceModel(house,1,f*HEIGHT+.45));
+  const cutX=MIRROR_X-(STAIR.x+STAIR.width/2),section=sliceModel(house,0,cutX);
+  drawingRenderer=new T.WebGLRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});drawingRenderer.setPixelRatio(1);drawingRenderer.setClearColor('#ffffff');drawingRenderer.toneMapping=renderer.toneMapping;drawingRenderer.toneMappingExposure=1.1;
+  function elevation(side){
+   const aspect=side?1.31:.586,h=13.4,w=h*aspect,c=new T.OrthographicCamera(-w/2,w/2,h/2,-h/2,.1,120);
+   if(side)c.position.set(-35,5.4,6.6);else c.position.set(2.75,5.4,-35);
+   c.lookAt(2.75,5.4,6.6);
+   drawingRenderer.setSize(Math.round(1500*aspect),1500);drawingRenderer.render(scene,c);return drawingRenderer.domElement.toDataURL('image/png');
+  }
+  const sheets=createDrawingSet({plans,section,cutX,underlays,elevations:[elevationSheet(elevation(false),elevation(true))]});
+  openDrawingViewer(sheets,plans,preview);toast('Đã mở bộ bản vẽ · In / Lưu PDF');
+ }catch(error){console.error(error);preview.close();toast('Chưa xuất được bản vẽ. Hãy thử lại.');}
+ finally{drawingRenderer?.dispose();for(const [o,v]of visibility)o.visible=v;site.root.visible=siteVisible;dimensions.visible=dimensionsVisible;applyLighting(previousMix);lighting.setView(mode,low);technicalButton.disabled=false;invalidate(true);}
+};
 
 const scene=new T.Scene();
 const renderer=new T.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance',preserveDrawingBuffer:true});
@@ -43,7 +72,7 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)');
 const title=document.querySelector('#view-title'),number=document.querySelector('.view-number');
 function targetCamera(animate=true){if(!animate)transition=null;freeNav.setFree(false);title.textContent=mode==='all'?'Liên tầng':levels[+mode].name;camera=orthoCamera;controls.object=camera;controls.enablePan=true;document.querySelector('#entry').classList.remove('selected');resize();const neighborhood=mode==='all'&&site.stats().advanced;controls.minZoom=neighborhood?.16:.45;const y=neighborhood?0:mode==='all'?4.8:Number(mode)*HEIGHT+.4;const target=new T.Vector3(2.7,y,plan?6.65:wide?6.3:4.9);const offset=neighborhood?new T.Vector3(-18,46,-24):plan?new T.Vector3(0,28,-.001):mode==='all'?new T.Vector3(-14,12,-18):innerWidth<650?new T.Vector3(-4,13,-12):new T.Vector3(-7,9,-7);const pos=target.clone().add(offset);const zoom=neighborhood?(innerWidth<650?.16:.23):mode==='all'?.7:1;const start={p:camera.position.clone(),t:controls.target.clone(),z:camera.zoom};if(animate&&!reduce.matches){transition={start,end:{p:pos,t:target,z:zoom},time:performance.now()}}else{camera.position.copy(pos);controls.target.copy(target);camera.zoom=zoom;camera.updateProjectionMatrix();controls.update()}invalidate()}
 function invalidate(shadows=false){dirty=true;lastChange=performance.now();if(shadows)renderer.shadowMap.needsUpdate=true;}
-function updateView(newMode){mode=newMode;document.querySelector('#floor-trigger').dataset.level=mode==='all'?'↗':String(+mode+1);const nextPlan=createRoomPlan(mode==='all'?0:Number(mode));roomPlan.replaceWith(nextPlan);roomPlan=nextPlan;measureButton.disabled=mode==='all';measureButton.title='Kích thước các khu trên tầng đang xem';closeRoomPlan();site.setVisible(siteEnabled&&mode==='all');low=mode!=='all';plan=false;document.querySelector('#dollhouse').classList.add('selected');document.querySelector('#plan').classList.remove('selected');document.querySelector('#walls').setAttribute('aria-pressed',String(low));document.querySelector('#walls').textContent=low?'Tường thấp':'Tường cao';document.querySelectorAll('[data-floor]').forEach(b=>b.classList.toggle('active',b.dataset.floor===mode));setHouseView(mode,low);lighting.setView(mode,low);title.textContent=mode==='all'?'Liên tầng':levels[+mode].name;number.innerHTML=mode==='all'?'⌂ <span>3 TẦNG</span>':`0${+mode+1} <span>/ 03</span>`;dimensions.position.y=mode==='all'?0:+mode*HEIGHT;drawLabels();targetCamera();invalidate(true)}
+function updateView(newMode){mode=newMode;const floorLabel=mode==='all'?'Tổng thể':`Tầng ${+mode+1}`;document.querySelector('.floor-current').textContent=floorLabel;document.querySelector('#floor-trigger').setAttribute('aria-label',`Chọn tầng · ${floorLabel}`);document.querySelector('#floor-trigger').dataset.level=mode==='all'?'↗':String(+mode+1);const nextPlan=createRoomPlan(mode==='all'?0:Number(mode));roomPlan.replaceWith(nextPlan);roomPlan=nextPlan;measureButton.disabled=mode==='all';measureButton.title='Kích thước các khu trên tầng đang xem';closeRoomPlan();site.setVisible(siteEnabled&&mode==='all');low=mode!=='all';plan=false;document.querySelector('#dollhouse').classList.add('selected');document.querySelector('#plan').classList.remove('selected');document.querySelector('#walls').setAttribute('aria-pressed',String(low));document.querySelector('#walls').textContent=low?'Tường thấp':'Tường cao';document.querySelectorAll('[data-floor]').forEach(b=>b.classList.toggle('active',b.dataset.floor===mode));setHouseView(mode,low);lighting.setView(mode,low);title.textContent=mode==='all'?'Liên tầng':levels[+mode].name;number.innerHTML=mode==='all'?'⌂ <span>3 TẦNG</span>':`0${+mode+1} <span>/ 03</span>`;dimensions.position.y=mode==='all'?0:+mode*HEIGHT;drawLabels();targetCamera();invalidate(true)}
 const labelEls=labels.map(l=>{const el=document.createElement('span');el.textContent=l.text;el.className='room-label';document.querySelector('#room-labels').appendChild(el);return{...l,el}});
 function drawLabels(){for(const l of labelEls){if(!showLabels||mode==='all'||l.floor!==+mode){l.el.style.display='none';continue}const v=l.point.clone();v.y+=l.floor*HEIGHT;v.project(camera);l.el.style.display=v.z>-1&&v.z<1?'block':'none';l.el.style.left=`${(v.x*.5+.5)*stage.clientWidth}px`;l.el.style.top=`${(-v.y*.5+.5)*stage.clientHeight}px`}}
 function resize(){const w=stage.clientWidth,h=stage.clientHeight,aspect=w/h;const frustum=Math.max(plan?19:wide?13.5:7.8,(plan?8.5:wide?(innerWidth<650?10.5:12):8.2)/aspect);if(camera.isPerspectiveCamera){camera.aspect=aspect}else{camera.left=-frustum*aspect/2;camera.right=frustum*aspect/2;camera.top=frustum/2;camera.bottom=-frustum/2}camera.updateProjectionMatrix();renderer.setSize(w,h);invalidate(true);drawLabels()}

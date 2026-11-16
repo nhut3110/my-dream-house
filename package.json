@@ -6,7 +6,7 @@
     "dev": "vite --host 0.0.0.0 --port 4190",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4190",
-    "check": "node scripts/check-model.mjs"
+    "check": "node scripts/check-model.mjs && node scripts/check-drawings.mjs"
   },
   "dependencies": {
     "three": "0.181.0"

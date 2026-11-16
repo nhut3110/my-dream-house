@@ -17,6 +17,7 @@ export function trailingPlanters({parent,segments,center,box,rod,group,M,clearan
     const along=(k/12-.5)*(width-.04),seed=j*19+k;
     const start=new T.Vector3(x+tx*along,.94,z+tz*along);
     let prev=start.clone();let dropLength= rhythm ? .50+(Math.sin(j*1.9+x*.9+z*.7)+1)*.40+(Math.sin(seed*2.4)+1)*.12 : 1.05+(Math.sin(seed*2.4)+1)*.4;
+    if(rhythm&&start.z<.60)dropLength=Math.min(dropLength,.55+.10*Math.sin(seed));
     for(const c of clearances)if(start.x>c.minX&&Math.abs(start.z-c.z)<c.halfWidth)dropLength=Math.min(dropLength,c.maxDrop);
     for(let n=0;n<14;n++){
      const q=n/13,reach=Math.sin(Math.min(q*3,1)*Math.PI/2)*(rhythm?.47:.24);

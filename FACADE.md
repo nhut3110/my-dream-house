@@ -2,14 +2,18 @@
 
 Phương án hoàn thiện mặt trước và mặt hông phải, giữ nguyên mặt bằng và các lỗ cửa.
 
-## Ý đồ — bản chỉnh gọn mặt bên và ban công
+## Phương án hiện tại — mảng kem và khung nâu ôm góc
 
-- Giữ khung lớn ôm góc, nhưng bỏ toàn bộ mảng xanh, gốm gân hông và gốm trên chuồng cu. Tầng 2 và khối mái thống nhất trắng ngà; giữ sắc đất nung ở mảng cửa mặt trước.
-- Ban công master dùng tường đặc liên tục cao 1,10 m, dày 160 mm, có nắp bo nối liền qua góc; thay lan can sắt đen và các bồn cây rủ bằng một chậu hoa nhỏ trên nắp tường.
-- Tầng trệt ốp porcelain tông greige sáng giả đá limestone mờ, khổ 600×1200 mm, mạch 3 mm. Hai trụ cạnh cổng, góc cong và mặt bên cùng tông; không ốp lên cánh cổng gỗ.
-- Nền hiên dùng gạch cùng tông 600×600 mm, ý đồ bề mặt nhám chống trượt (khi mua cần kiểm tra cấp chống trượt thực tế, ưu tiên R11 cho chỗ dễ ướt). Giữ nền phẳng, cao độ, dốc mép cổng và ba vị trí xe hiện có; không lát lấn ra đường hẻm.
-- Cửa sổ và cửa thoát hiểm được trừ khỏi từng viên bằng phép trừ hình chữ nhật. Không tạo nhiều lỗ khoét chồng nhau trên một tấm lớn: cách cũ gây tam giác phủ lên kính khi lỗ cửa và lỗ cục nóng giao nhau.
-- Lớp gạch ngoài tường được chia tại chỗ ranh đất đổi hướng, tự ẩn cùng lớp mặt đứng khi xem tường thấp.
+Lấy tinh thần bố cục từ ảnh mặt tiền chủ nhà gửi: mảng tường lớn yên tĩnh, ban công lõm tạo chiều sâu, khung nâu và cây xanh làm điểm nhấn. Không sao chép mái ngói hoặc thêm trụ trang trí.
+
+- Master có một mảng kem liền, cửa kính lớn viền nâu mảnh; bỏ gân đứng và mảng màu phụ bên cửa.
+- Ban công giữ nguyên diện tích hiện có. Tường đặc và nắp cao 865 mm; tay vịn chữ nhật nâu cao tổng 1,15 m, thanh đứng nhỏ, không có thanh ngang sát nắp. Các chi tiết dùng chung đường bo để khớp qua góc.
+- Trần gỗ ban công nối kín với mặt dưới viền mái, có đường sáng ấm giấu bên trong. Chậu cây thấp nằm sau tường đặc, giữ cửa đi thông thoáng.
+- Tầng trệt dùng porcelain greige ấm giả limestone, mờ, khổ 600×1200 mm và mạch 3 mm; nền hiên cùng tông 600×600 mm, giữ nền phẳng và cao độ hiện có. Cần kiểm tra độ chống trượt sản phẩm thực tế khi mua.
+- Cây rủ sân thượng phía trước được tỉa ngắn để lộ đường viền kiến trúc. Mặt bên giữ nền ngà và mái cửa gọn.
+- Giữ nguyên mặt bằng phòng, cửa, cổng lùa và đường thoát hiểm. Gạch ốp trừ lỗ cửa theo từng viên, không che lên kính.
+
+Đã kiểm tra chính diện ban đêm và góc nghiêng ban ngày; ảnh `evidence/238-facade-composition-day.png`, `evidence/239-facade-composition-night.png`. `npm run check`, `npm run build` và `git diff --check` pass. Các mục lịch sử bên dưới mô tả phương án trước, thông số hiện tại ở mục này được ưu tiên.
 
 ## Tham khảo đã xem
 
@@ -50,3 +54,30 @@ Khôi phục lan can thanh đen ban công master theo chu vi cũ, bỏ tường 
 ### Revised master guard proportions
 
 Raised the solid wall/coping to 865 mm and shortened the exposed rail to 255 mm (60% of its former 425 mm). Total rail height remains 1.12 m. Removed the bottom horizontal rail; vertical bars embed 10 mm into the coping. Rail and handrail use the shared warm bronze-brown palette (#655c4d). Daylight view inspected in evidence/230; model check and build pass. Push held at the owner's request.
+
+## Cửa vòm và ban công mở rộng — ảnh tham khảo mới của chủ nhà
+
+- Cửa master rộng 693 mm (1/3 cửa 2,08 m trước), cao từ 0,65 đến 2,95 m, đầu bán nguyệt; kính, khung nâu và phần tường hai góc vòm cùng hình học, có rèm phía trong.
+- Vách ban công dịch từ x=3,15 m sang 2,65 m, tăng rộng 500 mm, giữ chiều sâu 1,45 m và nằm trong ranh nhà. Mặt bằng kích thước cập nhật theo vách mới; bàn PC và giường không thay đổi.
+- Tường đặc bo góc và lan can ngắn nâu liên tục, thêm dải cây phía trong. Mái che phẳng với khung nâu mảnh, trần gỗ và các thanh đỡ dưới, thay tinh thần mái ngói trong ảnh bằng chi tiết hiện đại.
+- Vách cố định cạnh cổng có hai ô vòm 380 mm, lam nâu dọc; không can thiệp cánh cổng trượt, bảng số nhà hay lối dắt xe. Đầu ô thấp hơn đỉnh tường 180 mm để giữ phần tường liên tục bên trên.
+- Đây là phương án hình khối để trao đổi; chi tiết lan can, khung chống trộm, chống thấm mái và kết cấu ô cửa cần thiết kế thi công riêng.
+
+## Phân khối theo ảnh mới — hai cửa vòm và ban công nâu
+
+- Khối cửa master trắng ngà nhô thêm 230 mm so với lớp hoàn thiện trước, gồm hai cửa vòm rộng 693 mm, tâm x=0,755 và 2,015 m. Hốc cửa có chiều sâu, mặt trong sáng và viền nâu mảnh.
+- Khối ban công dùng nâu đất ấm cho tường chắn chân, góc cong, vách chia bên và tường sau cửa kính; lùi so với khối trắng. Không đổi vị trí cửa đi.
+- Lan can kim loại chỉ chạy thẳng mặt trước. Từ tiếp tuyến vào góc cong và hết đoạn bên hẻm là tường đặc cao 1,15 m, nối tới cao độ tay vịn; không có lan can vòng góc.
+- Giữ mái che mảnh, trần gỗ, cây và diện tích ban công của phương án mở rộng trước đó.
+
+Hai cửa vòm cân đối sang hai bên khối trắng; đèn mặt tiền nằm giữa tại x=1,385 m, cách đều hai tâm cửa và không chạm viền khung.
+
+## Tinh chỉnh vách cổng — cụm vòm sân vườn
+
+Hai ô vòm đổi sang tỷ lệ gọn hơn: rộng 460 mm, từ cao độ 0,64 đến 1,62 m so với sàn nhà. Viền đồng nâu mảnh 18 mm và bốn song đứng/ô; hốc sáng có chiều sâu, kính mờ xanh xám phía trong giúp che đường nội thất lộn xộn. Bồn cây chung nằm phía trong sân, lá gọn trong từng ô, không lấn hẻm hay đường cổng trượt. Bảng số nhà và đèn chuyển tâm sang x=3,30 m để chừa khoảng nghỉ trước cụm vòm; đèn vẫn áp sát mặt gạch. Kiểm tra mô hình, build và whitespace pass; xem cận cảnh ngày/đêm.
+
+Chỉnh tiếp giáp trên khối hai cửa: mép trên vuông nối vào viền mái tại cao độ 3,32 m; bỏ dải gỗ đi xuyên trước khối trắng. Trần gỗ ngoài chỉ chạy từ ranh ban công sang góc bo, không còn các đoạn nâu rời ở đầu và giữa khối cửa. Kiểm tra chính diện và góc nghiêng, check/build pass.
+
+Bo cạnh đứng phía ban công của khối trắng bán kính 100 mm, liên tục từ chân đến mép mái. Đầu tay vịn và tường chắn chân dừng tại mặt hoàn thiện vách nâu, bỏ thanh đứng ở hai đầu để không xuyên/chồng vào tường và mép góc. Đã xem cận cảnh góc nghiêng và chính diện; check/build pass.
+
+Bỏ lớp kính mờ phía sau hai ô vòm cổng theo phản hồi chủ nhà: giữ ô thoáng thực, song đứng và cây; có thể nhìn xuyên vào sân.

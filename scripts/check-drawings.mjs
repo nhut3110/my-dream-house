@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {triangleCut,drawingDXF,drawingData,createDrawingSet} from '../src/technical-drawings.js';
+const crossing=triangleCut([[0,0,0],[2,2,0],[0,2,2]],1,1);
+assert.deepEqual(crossing,[[1,1,0],[0,1,1]],'Cross-section interpolates real triangle edges');
+assert.equal(triangleCut([[0,0,0],[1,0,0],[0,0,1]],1,1),null,'No invented intersection outside a mesh');
+assert.equal(triangleCut([[0,1,0],[1,2,0],[0,2,1]],1,1),null,'Vertex-only contact is not a line');
+const sample=[[[[1,1.1,2],[3,1.1,4]]],[],[]];
+const dxf=drawingDXF(sample);
+assert.ok(dxf.includes('$INSUNITS\n70\n4\n'),'CAD uses millimetres');
+assert.ok(dxf.includes('10\n1000\n20\n-2000\n30\n0\n11\n3000\n21\n-4000'),'CAD converts model metres to millimetres without distortion');
+const data=drawingData();assert.equal(data.floorToFloor,3.6);assert.equal(data.rooms.length,3);
+assert.ok(data.rooms.every(rooms=>rooms.every(r=>r.rings.every(ring=>ring.every(e=>Number.isFinite(e.angle)&&e.length>0)))),'All room boundaries, holes and angles are exported');
+const sheets=createDrawingSet({plans:sample,section:[],cutX:1});
+assert.equal(new Set(sheets.map(s=>s.code)).size,sheets.length,'Unique drawing identifiers');
+assert.ok(sheets.every(s=>s.svg.includes('width="420mm" height="297mm"')&&!/NaN|undefined/.test(s.svg)),'Every sheet is a valid sized A3 document');
+assert.ok(sheets[0].svg.includes('CHƯA DÙNG XIN PHÉP'),'Unverified model is never marked permit-ready');
+console.log(`PASS: triangle sections, CAD units, complete room data and ${sheets.length} A3 sheets.`);

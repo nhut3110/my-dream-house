@@ -1,7 +1,8 @@
+import {GATE_ARCHES,archSpandrels,archFrame} from './arched-openings.js';
 import * as T from 'three';
 import {GROUND,HEIGHT,UPPER,entrySpan,MASTER_SUITE} from './design.js';
 
-export const EXTERIOR_TILE={color:'#c5bfb2',grout:'#aaa79f',width:1.2,height:.6,joint:.003,finish:'matte greige limestone-look porcelain'};
+export const EXTERIOR_TILE={color:'#cfc5b4',grout:'#bdb4a5',width:1.2,height:.6,joint:.003,finish:'matte greige limestone-look porcelain'};
 // Rectangular subtraction also handles intersecting openings. No overlapping Shape holes.
 export function subtractOpenings(rect,openings){
  return openings.reduce((pieces,o)=>pieces.flatMap(r=>{
@@ -50,12 +51,38 @@ export function buildExteriorTiles({base,front,box,group,shapeSlab,foldSideGeome
   box(surround,(r.x1+r.x2)/2,r.y1,GROUND.glassLine-.086,r.x2-r.x1,r.y2-r.y1,.012,tile).castShadow=false;
  // Gate-side masonry: tile both fixed piers, never the moving timber gate.
  const gateHole={x1:.43,x2:.46+GROUND.gateOpening+.15,y1:-.5,y2:3};
- for(const r of tiledRectangles({x1:.035,x2:4.84,y1:-.30,y2:GROUND.securityHeight+GROUND.porchLevel},[gateHole])){
+ for(const r of tiledRectangles({x1:.035,x2:4.84,y1:-.30,y2:GROUND.securityHeight+GROUND.porchLevel},[gateHole,...GATE_ARCHES.map(w=>({x1:w.x-w.width/2,x2:w.x+w.width/2,y1:w.bottom,y2:w.top}))])){
   const mid=(r.x1+r.x2)/2,z=facadePath[0][1]+(facadePath[1][1]-facadePath[0][1])*mid/facadePath[1][0]-.031;
   const g=group(base,mid,z,Math.atan2(-(facadePath[1][1]-facadePath[0][1]),facadePath[1][0]));
   box(g,0,r.y1,0,r.x2-r.x1,r.y2-r.y1,.106,tile).castShadow=false;
   box(g,0,r.y1,.208,r.x2-r.x1,r.y2-r.y1,.012,tile).castShadow=false;
  }
+ // A compact pair of recessed garden arches, with quiet bronze fins and a shared inner planter.
+ const brown=new T.MeshStandardMaterial({color:'#77604a',roughness:.78});
+ const reveal=new T.MeshStandardMaterial({color:'#ded5c4',roughness:.92});
+ const leaves=[new T.MeshStandardMaterial({color:'#455e43',roughness:.95}),new T.MeshStandardMaterial({color:'#738566',roughness:.95})];
+ for(const w of GATE_ARCHES){
+  const z=facadePath[0][1]+(facadePath[1][1]-facadePath[0][1])*w.x/facadePath[1][0]-.031;
+  const g=group(base,w.x,z);g.name='O_vom_thoang_vach_cong';
+  archSpandrels(g,w.width,w.top,.24,tile,-.06);
+  archFrame(g,w.width-.012,w.bottom+.006,w.top-.006,.025,.16,reveal,-.075);
+  archFrame(g,w.width-.012,w.bottom+.006,w.top-.006,.018,.025,brown,-.085);
+  for(const x of [-.15,-.05,.05,.15]){
+   const top=w.top-w.width/2+Math.sqrt((w.width/2)**2-x*x)-.02;
+   box(g,x,w.bottom+.015,.015,.012,top-w.bottom-.015,.025,brown);
+  }
+  box(g,0,w.bottom-.045,.035,w.width+.055,.035,.24,tile,.008);
+  // Compact foliage sits behind the bars, contained within the opening and inside the porch line.
+  for(let i=0;i<7;i++){
+   const x=(i%4-1.5)*.09,y=w.bottom+.11+(i%3)*.07;
+   const stem=box(g,x,w.bottom,.10,.004,y-w.bottom+.07,.004,leaves[0]);stem.castShadow=false;
+   const leaf=new T.Mesh(new T.SphereGeometry(1,10,8),leaves[i%2]);
+   leaf.position.set(x,y,.105+(i%2)*.02);leaf.scale.set(.046,.13,.018);leaf.rotation.set(.25,(i%3-1)*.45,(i%2?1:-1)*.45);leaf.castShadow=false;g.add(leaf);
+  }
+ }
+ const innerPlanter=group(base,4.22,.19);innerPlanter.name='Bon_cay_lien_duoi_hai_o_vom';
+ box(innerPlanter,0,.41,0,1.08,.18,.20,tile,.018);
+ box(innerPlanter,0,.59,0,1.02,.008,.15,M.soil);
  // Wrap a thin matching finish around the curved corner, no stacked rectangular patches.
  const curve=facadePath.filter(p=>p[0]>=4.84&&p[1]<.60);
  shapeSlab(base,facadeRibbon(curve,.072,.086),GROUND.securityHeight+GROUND.porchLevel,GROUND.securityHeight,tile).name='Gach_bo_goc_cong';

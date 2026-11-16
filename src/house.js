@@ -1,3 +1,5 @@
+import {archShape,archMesh,archFrame,archSpandrels,GATE_ARCHES} from './arched-openings.js';
+import {buildDomesticAltars} from './domestic-altars.js';
 import {porchTileMaterial} from './exterior-tiles.js';
 import {buildFacadeDesign} from './facade-design.js';
 import {WINDER,fanPoint,fanAngle,fanHeight,fanStepPolygon,fanEntryDirection} from './stair-entry.js';
@@ -98,12 +100,12 @@ function livingRoom(p){const living=group(p);living.name='Phong_khach_sofa_phai_
  // Low, handle-free credenza on the left party wall; no freestanding TV pedestal.
  const wallSlope=(entrySpan(GROUND.tv.z+.1)[0]-entrySpan(GROUND.tv.z-.1)[0])/.2;
  const tv=group(p,entrySpan(GROUND.tv.z)[0]+.09+.225,GROUND.tv.z,-Math.atan(wallSlope));tv.name='TV_ben_trai';tv.userData={wallGap:.01,wallAligned:true};
- box(tv,-.14,.05,0,.12,2.3,2.4,mat('#dedbd2'),.025);
- box(tv,0,.16,0,.43,.31,2.2,M.oak,.035);box(tv,.015,.47,0,.46,.025,2.24,mat('#d6c8b6'),.01);
- for(let i=0;i<4;i++){box(tv,.223,.185,-.825+i*.55,.012,.26,.538,M.linen,.008)}
+ box(tv,-.14,.05,0,.12,2.3,GROUND.tv.panelLength,mat('#dedbd2'),.025);
+ box(tv,0,.16,0,.43,.31,GROUND.tv.cabinetLength,M.oak,.035);box(tv,.015,.47,0,.46,.025,GROUND.tv.cabinetLength+.04,mat('#d6c8b6'),.01);
+ for(let i=0;i<4;i++){box(tv,.223,.185,-GROUND.tv.cabinetLength/2+GROUND.tv.cabinetLength/8+i*GROUND.tv.cabinetLength/4,.012,.26,GROUND.tv.cabinetLength/4-.012,M.linen,.008)}
  box(tv,.025,.92,0,.055,.82,1.45,M.dark,.012);box(tv,.057,.935,0,.008,.79,1.42,mat('#171d20',.16));
- box(tv,.075,.915,0,.015,.004,.06,M.dark);box(tv,.05,.495,-.82,.24,.018,.32,M.stone,.01);box(tv,.05,.515,-.82,.22,.018,.3,M.sage,.01);
- cyl(tv,.04,.495,.88,.075,.16,M.stone,.045);
+ box(tv,.075,.915,0,.015,.004,.06,M.dark);box(tv,.05,.495,-.53,.24,.018,.32,M.stone,.01);box(tv,.05,.515,-.53,.22,.018,.3,M.sage,.01);
+ cyl(tv,.04,.495,.56,.075,.16,M.stone,.045);
  // Coffee table: 850 x 1400 mm, 450+ mm clear of sofa front.
  const table=group(p,LIVING.coffee.x,LIVING.coffee.z);table.name='Ban_tra_700x950';
  for(const z of[-.29,.29])box(table,0,.025,z,.5,.29,.14,M.oak,.06);
@@ -169,11 +171,12 @@ function lStair(p,{arrivalRail=true,frontGuard=false}={}){
   const curved=group(g);curved.name='Bac_xoe_quat_loi_len_cheo';curved.userData={...WINDER,entryDirection:fanEntryDirection};
   for(let i=0;i<WINDER.risers;i++){
    const polygon=fanStepPolygon(i),y=(i+1)*rise;
-   const body=shapeSlab(curved,polygon,y-.065,y-.065,M.oak);body.name='Than_bac_quat_'+(i+1);
-   const top=shapeSlab(curved,polygon,y,.065,material);top.name='Mat_bac_quat_'+(i+1);
-   if(i>1){const angle=fanAngle((i+.5)/WINDER.risers),[xx,zz]=fanPoint(WINDER.innerRadius+width+.012,angle),panel=group(curved,xx,zz,Math.PI/2-angle);
-    box(panel,0,.08,0,.23,y-.18,.02,M.linen,.008);box(panel,.07,.15,0,.012,.075,.045,M.dark,.004)}
+   const body=shapeSlab(curved,polygon,y-.035,y-.035,M.linen);body.name='Than_bac_quat_'+(i+1);
+   const top=shapeSlab(curved,polygon,y,.035,material);top.name='Mat_bac_quat_'+(i+1);
+
   }
+  // Close the short neck before the fitted cabinetry, underneath the sixth riser.
+  box(g,x+width/2,0,turnZ+.05,width,firstY-.035,.10,M.linen);
   for(const [radius,name] of [[WINDER.innerRadius-.035,'Lan_can_cung_trong'],[WINDER.innerRadius+width+.035,'Lan_can_cung_ngoai']]){
    const guard=group(g);guard.name=name;const rail=[];
    for(let i=0;i<=64;i++){const t=i/64,[xx,zz]=fanPoint(radius,fanAngle(t));rail.push([xx,fanHeight(t)+.95,zz])}
@@ -465,7 +468,7 @@ function furnishSmallUpperRoom(p){
  const B=S.bed;
  const frame=bed(sleeping,B.x,B.z,B.width,false);frame.rotation.y=B.rotation;frame.name='Giuong_phong_nho_1400x2000';
  // Wardrobe sits against the stepped front wall, facing into the room.
- const W=S.wardrobe;const closet=wardrobe(sleeping,W.x,W.z,W.width,Math.PI);closet.name='Tu_ao_phong_nho_1900x580';
+ const W=S.wardrobe;const closet=wardrobe(sleeping,W.x,W.z,W.width,Math.PI);closet.name='Tu_ao_phong_nho_1600x580';
  const D=S.desk;const work=group(sleeping,D.x,D.z,-Math.PI/2);work.name='Ban_phong_nho_720x400';desk(work,0,0,D.width,D.depth);
  for(const x of [S.bed.x-.94,S.bed.x+.94]){box(sleeping,x,.04,12.68,.32,.43,.34,M.oak,.025);box(sleeping,x,.47,12.68,.34,.025,.36,M.stone,.012);cyl(sleeping,x,.495,12.68,.055,.16,M.linen)}
  room.userData={bath:S.bath,bed:S.bed,wardrobe:S.wardrobe,desk:S.desk};
@@ -525,7 +528,6 @@ function furnishMasterSuite(p){
  const chair=group(g,S.pc.x,S.pc.chairZ);chair.name='Ghe_ban_PC_master';
  box(chair,0,.43,0,.46,.07,.43,M.olive,.045);box(chair,0,.48,.19,.45,.48,.055,M.olive,.04);cyl(chair,0,.1,0,.025,.33,M.dark);for(let i=0;i<5;i++){const a=i*Math.PI*2/5;rod(chair,[0,.1,0],[Math.cos(a)*.23,.06,Math.sin(a)*.23],.012,M.dark);cyl(chair,Math.cos(a)*.23,.025,Math.sin(a)*.23,.025,.035,M.dark)}
  const W=S.wardrobe,closet=wardrobe(g,W.x,W.z,W.width,Math.PI/2);closet.name='Tu_ao_master_ben_phai_1300x580';
- const E=S.endWardrobe,endCloset=wardrobe(g,E.x,E.z,E.width);endCloset.name='Tu_ao_master_theo_dai_xanh_1800x580';
  // Follow the actual sloping facade; panel, bracket and screen stay attached in cutaway view.
  const slope=(entrySpan(S.tv.z+.1)[1]-entrySpan(S.tv.z-.1)[1])/.2,angle=Math.atan(slope),screenOffset=S.tv.depth/2-.03;
  const tv=group(g,entrySpan(S.tv.z)[1]-S.tv.depth/2-.04,S.tv.z+screenOffset*Math.sin(angle),Math.PI/2+angle);tv.name='He_tu_TV_master';
@@ -547,13 +549,22 @@ function perimeter(p,index){
   a=[a[0]+dz/len*.095,a[1]-dx/len*.095];b=[b[0]+dz/len*.095,b[1]-dx/len*.095];
   if(i<3){
    if(index===0){
-    if(i===0){const start=.46,end=start+GROUND.gateOpening+.12;wall(p,a,b,GROUND.securityHeight+GROUND.porchLevel,.14,[{start,end,bottom:0,top:GROUND.securityHeight+GROUND.porchLevel}],true);frontGate(p,[a[0]+dx/len*start,a[1]+dz/len*start],[a[0]+dx/len*end,a[1]+dz/len*end])}
+    if(i===0){const start=.46,end=start+GROUND.gateOpening+.12;wall(p,a,b,GROUND.securityHeight+GROUND.porchLevel,.14,[{start,end,bottom:0,top:GROUND.securityHeight+GROUND.porchLevel},...GATE_ARCHES.map(w=>({start:w.x-w.width/2,end:w.x+w.width/2,bottom:w.bottom,top:w.top}))],true);frontGate(p,[a[0]+dx/len*start,a[1]+dz/len*start],[a[0]+dx/len*end,a[1]+dz/len*end])}
     else wall(p,a,b,GROUND.securityHeight+GROUND.porchLevel,.14,[],true);
    }else if(index===1&&i===0){
     const splitX=MIRROR_X-MASTER_SUITE.balcony.splitX,t=(splitX-a[0])/(b[0]-a[0]),cut=[splitX,a[1]+t*(b[1]-a[1])];
     const length=Math.hypot(cut[0]-a[0],cut[1]-a[1]),vx=(cut[0]-a[0])/length,vz=(cut[1]-a[1])/length;
-    wall(p,a,cut,HEIGHT-UPPER.slabThickness,.18,[{start:.4,end:2.48,bottom:.95,top:2.55}],true);
-    windowOn(p,[a[0]+vx*.4,a[1]+vz*.4],[a[0]+vx*2.48,a[1]+vz*2.48],.95,2.55,true,{security:false});
+    const W=MASTER_SUITE.frontWindow;
+    wall(p,a,cut,HEIGHT-UPPER.slabThickness,.18,W.centers.map(center=>({start:center-W.width/2,end:center+W.width/2,bottom:W.sill,top:W.head})),true);
+    for(const center of W.centers){
+    const aw=group(p,a[0]+vx*center,a[1]+vz*center,-Math.atan2(vz,vx));aw.name='Cua_so_vom_master';
+    archSpandrels(aw,W.width,W.head,.18,M.plaster,-.09);
+    archMesh(aw,archShape(W.width,W.sill,W.head),.025,M.glass,-.0125);
+    archFrame(aw,W.width,W.sill,W.head,.035,.075,M.oak,-.0375);
+    box(aw,0,1.16,0,W.width,.025,.065,M.oak);
+    for(const side of [-1,1])for(let i=0;i<5;i++)box(aw,side*(W.width/2-.06)+i*.009,W.sill,.16,.018,1.82,.035,M.linen);
+    glassParts.push({obj:aw,floor:1,hideCut:true});
+    }
     openingAudit.push({floor:1,kind:'window',side:'front',zone:'master-pc'});
    }else railing(p,a,b);continue;
   }
@@ -612,7 +623,7 @@ for(let index=0;index<1;index++){
     const bounds=new T.Box3().setFromObject(model),center=bounds.getCenter(new T.Vector3());
     model.position.set(-center.x,-bounds.min.y,-center.z);holder.add(model);holder.userData={...bike};
    }
-   box(p,.9,.018,GROUND.glassLine+.35,.85,.01,.32,M.olive);
+   box(p,1.45,.018,GROUND.glassLine+.35,.85,.01,.32,M.olive);
    const shoes=group(p,4.82,1.65,Math.PI/2);shoes.name='Ke_giay_hien_800x280';shoes.position.y=GROUND.porchLevel;
    for(const y of[.06,.29,.52,.75])box(shoes,0,y,0,.8,.025,.28,M.oak,.008);
    for(const x of[-.385,.385])box(shoes,x,.06,0,.03,.7,.28,M.oak,.008);
@@ -634,7 +645,7 @@ for(let index=0;index<1;index++){
    }
    securityCamera({parent:p,position:[entrySpan(2.13)[1]-.12,2.65,2.13],target:[2.5,.5,.2],mountRotation:Math.PI/2,name:'Camera_goc_hien',box,cyl,rod,group,M});
    securityCamera({parent:p,position:[2.11,2.65,10.35],target:[3.9,.8,12],mountRotation:-Math.PI/2,name:'Camera_phong_ong_ba',box,cyl,rod,group,M});
-   livingRoom(p);lStair(p,{arrivalRail:false,frontGuard:true});serviceRooms(p);
+   livingRoom(p);lStair(p,{arrivalRail:false,frontGuard:true});serviceRooms(p);buildDomesticAltars({parent:p,group,box,cyl,rod,M});
   }else{
    partition(p,3.95,3.7,5.22,1.5);wall(p,[1.45,1.75],[1.45,3.95]);partition(p,10.25,3.7);bathroom(p);
    box(p,2.72,.002,11.7,5.03,.008,2.76,M.oak);bed(p,2.45,11.55);wardrobe(p,.65,11.8,1.7,-Math.PI/2);desk(p,4.4,12.2);artwork(p,2.4,10.31,1.1);

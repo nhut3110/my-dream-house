@@ -2,8 +2,8 @@ import {fanStepMarker} from './stair-entry.js';
 import {HEIGHT,UPPER,STAIR,entrySpan,THIRD,MASTER_SUITE,SMALL_SUITE,SERVICE} from './design.js';
 
 // Metres above each finished floor. Warm living areas; neutral task/bathroom lighting.
-const addressWallZ=.043199780982963176+(-.0206-.043199780982963176)*3.5/4.8405875785593295-.031-.106/2;
-export const ADDRESS_MOUNT={x:3.5,z:addressWallZ-.014,lightZ:addressWallZ-.001,wallZ:addressWallZ,signY:1.39,lightY:1.72};
+const addressWallZ=.043199780982963176+(-.0206-.043199780982963176)*3.30/4.8405875785593295-.031-.106/2;
+export const ADDRESS_MOUNT={x:3.30,z:addressWallZ-.014,lightZ:addressWallZ-.001,wallZ:addressWallZ,signY:1.39,lightY:1.72};
 export const LIGHTING_PLAN=[];
 const add=(floor,zone,kind,x,z,options={})=>LIGHTING_PLAN.push({floor,zone,kind,x,z,y:HEIGHT-UPPER.slabThickness-.015,kelvin:3000,...options});
 for(const [x,z] of [[1.55,3.15],[3.7,3.15],[1.55,4.7],[3.7,4.7]])add(0,'living','ceiling',x,z,{primary:z===3.15,allPriority:10,power:65,range:5.8});
@@ -58,4 +58,4 @@ export const REQUIRED_LIT_ZONES=[
 for(const l of LIGHTING_PLAN)if(['porch','balcony'].includes(l.zone)&&l.primary)l.allPriority=9;
 
 add(0,'front-facade','ceiling',3.7,1.2,{y:HEIGHT-.245,radius:.10,porchCeiling:true,primary:true,allPriority:14,priority:9,power:26,range:4.5});
-add(1,'front-facade','wall',2.88,-.052,{y:2.52,rotation:Math.PI,primary:true,allPriority:14,priority:9,power:10,range:5.0});
+add(1,'front-facade','wall',(MASTER_SUITE.frontWindow.centers[0]+MASTER_SUITE.frontWindow.centers[1])/2,-.261,{y:2.52,rotation:Math.PI,primary:true,allPriority:14,priority:9,power:10,range:5.0});
