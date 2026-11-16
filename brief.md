@@ -39,7 +39,7 @@ Xem `plans/kich-thuoc-doc-tu-anh.csv`. Các số đều ở trạng thái đọc
 - Trái có hai đoạn 7,62 m và 5,10 m, với điểm gãy được vẽ trên hình.
 - Góc trên trái có hai đoạn ngắn ghi 1,06 m và 0,80 m.
 - Tầng lửng: trên 5,27 m; dưới 5,32 m; hai bên 7,70 m.
-- “262,00 m” đi cùng mũi tên ra đường Hoàng Diệu là ghi chú đường đi, không dùng làm kích thước nhà/đất.
+- “262,00 m” đi cùng mũi tên ra đường chính là ghi chú đường đi, không dùng làm kích thước nhà/đất.
 
 ## Nguyên tắc dựng đúng tỉ lệ
 

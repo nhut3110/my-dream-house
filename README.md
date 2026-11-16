@@ -123,7 +123,7 @@ Dock hỗ trợ cả ba tầng, liên tầng và bảng kích thước tầng 3.
 
 ## Deploy
 
-Repo cá nhân: `nhut3110/my-dream-house`, nhánh `main`. Vercel dùng Vite, Node 24, `npm ci`, rồi `npm run check && npm run build`; đầu ra `dist`. Sau khi kết nối repo, push main tự deploy production; pull request có preview. GitHub Actions chạy cùng check/build, không cần deploy token. Không cần backend hoặc Supabase.
+Nhánh triển khai: `main`. Vercel dùng Vite, Node 24, `npm ci`, rồi `npm run check && npm run build`; đầu ra `dist`. Sau khi kết nối repo, push main tự deploy production; pull request có preview. GitHub Actions chạy cùng check/build, không cần deploy token. Không cần backend hoặc Supabase.
 
 Ảnh tham chiếu gốc, lịch sử bản dựng, ảnh QC và GLB xuất ra giữ ở máy local, không đưa vào repo. Website chỉ phục vụ sơ đồ vector không chứa ảnh giấy tờ gốc.
 
@@ -161,7 +161,7 @@ Sân trước tầng 3 bỏ bộ bàn ghế, giữ khoảng giữa thoáng; bố
 
 Mặc định mở toàn cảnh đủ ba tầng, tường cao và khung camera vừa toàn nhà. Nút trăng trong dock chuyển ngày/đêm với chuyển tiếp 650 ms (tắt chuyển động nếu hệ điều hành yêu cầu giảm animation).
 
-Danh mục `src/lighting-plan.js` có 59 đèn: downlight phòng khách/bếp/hành lang, đèn thả bàn ăn, đèn ốp trần phòng ngủ, đèn trần WC/khu tắm, đèn lavabo và đèn dưới tủ bếp; đèn dẫn bậc đi theo cao độ hai vế thang; đèn hiên, ban công, sân trước/sau và dưới mái giặt. Đèn tường thân đen, mặt kính sáng và hắt lên/xuống theo ảnh tham khảo; khu tường thấp có chiều hắt lên ngắn hơn. Phòng ngủ/khu ở dùng tông khoảng 3000 K, khu tác vụ và WC khoảng 3500 K. Biển số nhà hai dòng “356/73 / HOÀNG DIỆU” đặt cạnh cổng.
+Danh mục `src/lighting-plan.js` có 59 đèn: downlight phòng khách/bếp/hành lang, đèn thả bàn ăn, đèn ốp trần phòng ngủ, đèn trần WC/khu tắm, đèn lavabo và đèn dưới tủ bếp; đèn dẫn bậc đi theo cao độ hai vế thang; đèn hiên, ban công, sân trước/sau và dưới mái giặt. Đèn tường thân đen, mặt kính sáng và hắt lên/xuống theo ảnh tham khảo; khu tường thấp có chiều hắt lên ngắn hơn. Phòng ngủ/khu ở dùng tông khoảng 3000 K, khu tác vụ và WC khoảng 3500 K. Biển số nhà hai dòng “ABC/XY / ĐƯỜNG SỐ 1” đặt cạnh cổng.
 
 Ánh sáng phối cảnh dùng tối đa 12 nguồn trực tiếp không đổ bóng bổ sung, kết hợp bề mặt phát sáng và mảng hắt ánh sáng nhẹ. Chuyển ngày/đêm giữ nguyên số light slot để tránh biên dịch lại shader; hình học vỏ đèn được gộp theo vật liệu/tầng. Đây là phối cảnh bố trí, chưa phải mô phỏng lux hoặc bản thiết kế điện thi công.
 

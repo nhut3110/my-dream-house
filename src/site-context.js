@@ -8,7 +8,7 @@ export function createSiteContext({box,M}){
  const massing=new T.Group();massing.name='Nha_giap_ranh';root.add(massing);
  const material=color=>new T.MeshStandardMaterial({color,roughness:.94});
  const road=material('#868982'),concrete=material('#b7b7a8'),neighbor=material('#c9c8b9'),rear=material('#c0c6bb'),trim=material('#a4aca2'),metal=material('#515e56');
- const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(256,256);let seed=35673;
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=256;const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(256,256);let seed=48109;
  for(let i=0;i<pixels.data.length;i+=4){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const value=132+(seed%23);pixels.data.set([value,value+2,value-3,255],i);}
  ctx.putImageData(pixels,0,0);const texture=new T.CanvasTexture(canvas);texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(.4,.4);texture.colorSpace=T.SRGBColorSpace;road.map=texture;
 

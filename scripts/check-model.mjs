@@ -326,7 +326,7 @@ assert.ok(Math.abs(bedHeadVector(MASTER_SUITE.bed.rotation)[0]-1)<1e-8,'Master h
 const kitchenFacing=ORIENTATION_TARGETS.find(t=>t.id==='kitchen'),cookFacing=ORIENTATION_TARGETS.find(t=>t.id==='cook');
 assert.ok(Math.abs(normalizeBearing(vectorBearing(kitchenFacing.vector)-vectorBearing(cookFacing.vector))-180)<1e-8,'Kitchen working face and cook gaze differ by 180 degrees');
 for(const target of ORIENTATION_TARGETS){assert.ok(Math.hypot(...target.vector)>.99);assert.equal(targetWorldPosition(target)[1],target.floor*HEIGHT+target.position[1])}
-assert.equal(ORIENTATION_REFERENCE.latitude,16.056323);assert.equal(ORIENTATION_REFERENCE.estimated,true);
+assert.ok(!("latitude" in ORIENTATION_REFERENCE)&&!("longitude" in ORIENTATION_REFERENCE)&&!("mapUrl" in ORIENTATION_REFERENCE),'Compass reference does not publish a private location');assert.equal(ORIENTATION_REFERENCE.estimated,true);
 console.log('PASS: compass bearings, mirrored headboards, kitchen convention and floor anchors.');
 
 assert.equal(WINDER.risers,5);assert.ok(fanWalkGoing>.25&&fanWalkGoing<.36,'Winder walk-line going remains at least 250 mm');

@@ -54,10 +54,10 @@ export function createHouseLighting({house,floors,scene}){
   }
  }
  // Number plaque faces the lane; the two-line texture remains readable at close range.
- const sign=new T.Group();sign.name='Bien_so_nha_356_73_Hoang_Dieu';sign.position.set(ADDRESS_MOUNT.x,ADDRESS_MOUNT.signY,ADDRESS_MOUNT.z);sign.rotation.y=Math.PI;sign.scale.x=-1;sign.userData={side:'right-from-street',textUnmirrored:true};roots[0].add(sign);
+ const sign=new T.Group();sign.name='Bien_so_nha_minh_hoa';sign.position.set(ADDRESS_MOUNT.x,ADDRESS_MOUNT.signY,ADDRESS_MOUNT.z);sign.rotation.y=Math.PI;sign.scale.x=-1;sign.userData={side:'right-from-street',textUnmirrored:true};roots[0].add(sign);
  box(sign,0,0,0,.42,.285,.026,dark);
  const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=640;const ctx=canvas.getContext('2d');
- ctx.fillStyle='#283431';ctx.fillRect(0,0,1024,640);ctx.strokeStyle='#bea778';ctx.lineWidth=5;ctx.strokeRect(22,22,980,596);ctx.fillStyle='#f2e1b7';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 225px sans-serif';ctx.fillText('356/73',512,260);ctx.font='500 94px sans-serif';ctx.fillText('HOÀNG DIỆU',512,485);
+ ctx.fillStyle='#283431';ctx.fillRect(0,0,1024,640);ctx.strokeStyle='#bea778';ctx.lineWidth=5;ctx.strokeRect(22,22,980,596);ctx.fillStyle='#f2e1b7';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 225px sans-serif';ctx.fillText('ABC/XY',512,260);ctx.font='500 94px sans-serif';ctx.fillText('ĐƯỜNG SỐ 1',512,485);
  const texture=new T.CanvasTexture(canvas);texture.colorSpace=T.SRGBColorSpace;
  mesh(sign,new T.PlaneGeometry(.405,.27),new T.MeshStandardMaterial({map:texture,roughness:.85}),0,0,.015);
  // Batch static housings and luminous surfaces per floor; keep the fixture plan as metadata.
@@ -78,5 +78,5 @@ export function createHouseLighting({house,floors,scene}){
   slots.forEach((light,i)=>{const s=active[i];if(!s){light.intensity=0;return}const offset=s.kind==='wall'?.22:s.kind==='address'?.12:0;light.position.set(MIRROR_X-s.x-Math.sin(s.rotation||0)*offset,HEIGHT*s.floor+s.y-(s.kind==='ceiling'?.25:0),s.z+Math.cos(s.rotation||0)*offset);light.color.set(s.kelvin>=3500?'#ffe5c5':'#ffd5a0');light.intensity=nightMix*(s.power??(s.kind==='wall'?22:62));light.distance=s.range??(s.kind==='wall'?4.1:5.1);});
   glow.emissiveIntensity=.05+nightMix*1.8;washMaterial.opacity=nightMix*.72;poolMaterial.opacity=nightMix*.36;
  }
- return {plan:LIGHTING_PLAN,fixtures,slots,setView(mode,lowWalls=false){view=mode;fixtures.forEach(f=>{if(f.userData.kind==='wall'||(f.userData.kind==='step'&&f.userData.y>.72))f.visible=!lowWalls;});wallBatches.forEach(b=>b.visible=!lowWalls);ceilingBatches.forEach(b=>{b.mesh.visible=!(lowWalls&&b.porchCeiling);b.mesh.material=mode==='all'?b.solid:b.ghost;});wallWashes.forEach(m=>m.visible=!lowWalls);update()},setMix(value){nightMix=value;update()},stats:()=>({fixtures:fixtures.length,view,nightMix,activeLights:slots.filter(l=>l.intensity>0).length,lightBudget:slots.length,address:'356/73 Hoàng Diệu'})};
+ return {plan:LIGHTING_PLAN,fixtures,slots,setView(mode,lowWalls=false){view=mode;fixtures.forEach(f=>{if(f.userData.kind==='wall'||(f.userData.kind==='step'&&f.userData.y>.72))f.visible=!lowWalls;});wallBatches.forEach(b=>b.visible=!lowWalls);ceilingBatches.forEach(b=>{b.mesh.visible=!(lowWalls&&b.porchCeiling);b.mesh.material=mode==='all'?b.solid:b.ghost;});wallWashes.forEach(m=>m.visible=!lowWalls);update()},setMix(value){nightMix=value;update()},stats:()=>({fixtures:fixtures.length,view,nightMix,activeLights:slots.filter(l=>l.intensity>0).length,lightBudget:slots.length,address:'ABC/XY Đường số 1'})};
 }

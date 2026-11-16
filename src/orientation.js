@@ -1,7 +1,7 @@
 import {WINDER,fanPoint,fanAngle,fanEntryDirection} from './stair-entry.js';
 import {GROUND,SERVICE,MASTER_SUITE,SMALL_SUITE,REAR_FURNITURE,THIRD,toWorld,HEIGHT,entrySpan} from './design.js';
 
-export const ORIENTATION_REFERENCE={frontBearing:340,estimated:true,latitude:16.056323,longitude:108.214575,source:'Google Maps marker + north-up satellite, 15/11/2026',mapUrl:'https://www.google.com/maps?q=16.056323,108.214575&t=k&z=21'};
+export const ORIENTATION_REFERENCE={frontBearing:340,estimated:true,source:'Model reference bearing; no geographic location stored'};
 export const normalizeBearing=n=>((n%360)+360)%360;
 // Model -Z is the main door's outward normal. Model +X is left from the yard.
 export function vectorBearing([x,z],frontBearing=ORIENTATION_REFERENCE.frontBearing){return normalizeBearing(frontBearing+Math.atan2(x,-z)*180/Math.PI)}

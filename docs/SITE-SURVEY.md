@@ -1,12 +1,12 @@
 # Bối cảnh nhà trong kiệt — đối chiếu 15/11/2026
 
-Nguồn: Google Maps / Street View tháng 4/2021 và ảnh vệ tinh tại khu vực 356/73 Hoàng Diệu. Không dùng nhãn địa điểm tìm kiếm để suy ra vị trí nhà: đối chiếu panorama và hình ngã ba.
+Nguồn: Google Maps / Street View tháng 4/2021 và ảnh vệ tinh do chủ nhà tham khảo. Không dùng nhãn địa điểm tìm kiếm để suy ra vị trí nhà: đối chiếu panorama và hình ngã ba.
 
 ## Những gì quan sát được
 
-- Panorama gốc `9PTpW461PVxkzpqmShsRhw`: 16.0563436, 108.2145314. Quay bốn hướng tại ngã ba, nhìn mặt trước và tường hông nhà cũ.
-- Đi tiếp dọc Kiệt 356, quan sát hai chiều ở nhiều panorama; vị trí phía đông `lnehtmn7VwlnhpZXGuFpeg`: 16.0564202, 108.2147314.
-- Đi vào nhánh bên hông: `v5nsPiG7nyok-mOeXcsM-A`, 16.0562525, 108.2145742; nhìn ngược về ngã ba và dọc nhánh. Có giàn kim loại, chậu cây treo, cửa sắt và mái đưa hẹp.
+- Quan sát bốn hướng tại ngã ba, mặt trước và tường hông nhà cũ.
+- Đi tiếp dọc hẻm, quan sát hai chiều ở nhiều góc nhìn.
+- Nhánh bên hông có giàn kim loại, chậu cây treo, cửa sắt và mái đưa hẹp.
 - Nhánh hông kết thúc tại đường trước cổng. Vì vậy mặt đường mô phỏng là chữ T: thanh ngang trước nhà, đuôi đi dọc bên phải từ sân nhìn vào. Không dựng thêm đường xuyên qua phía đối diện ngã ba.
 - Nhà bám sát nhau, mặt tiền hẹp, cao độ và mái không đồng đều; không có vỉa hè lớn hay sân bao quanh từng nhà.
 - Ảnh vệ tinh đối chiếu ở mức thước 5–10 m cho mật độ mái và hướng các nhánh hẻm.
